@@ -1,13 +1,14 @@
 <template>
-<div class="picker-item" >
-  <div v-if='type !== "content"' class="list-con" :style='{"height":height * length + "px"}' @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' >
+<div class="picker-item" :style='{"height":height * length + "px","lineHeight": height + "px"}' >
+  <div v-if='type !== "content"' class="list-con"  @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' >
     <div class="item-con" ref='con' :style='{"transform":"translate(0," + translate + "px)"}'>
-      <div class="space" :style='{"height":height * length/2 + "px"}'></div>
+      <div class="space" :style='{"height":height * (length-1)/2 + "px"}'></div>
       <div :class="['item', index === curIndex ? 'item-cur' : '']" :style='{"height":height + "px"}'
         v-for='(info, index) in data' :key='index'>{{info}}</div>
-      <div class="space" :style='{"height":height * length/2 + "px"}'></div>
+      <div class="space" :style='{"height":height * (length-1)/2 + "px"}'></div>
     </div>
   </div>
+  <div class="content" v-if='type === "content"' v-html='content'></div>
 </div>
 </template>
 
@@ -23,10 +24,11 @@ export default {
     curValue: {
       type: Object
     },
-    type: {
+    type: { // content list parentList chidlList rootList
       type: String,
       default: 'list'
     },
+    content: String,
     length: Number,
     height: Number,
     needCheck: Boolean,
@@ -40,16 +42,22 @@ export default {
       translate: 0,
       target: null,
       preTop: -1,
-      moveState: -1, // －1 leave 0 start 1 move
+      moveState: -1, // －1 still 0 start 1 move 2 chain
       timer: null
     }
   },
   watch: {
     curValue (v, ov) {
-      if (v.value !== this.curIndex) {
-        this.scroll(v.type, v.value)
+      if (this.type !== 'content') {
+        if (v.value !== this.curIndex) {
+          if (this.moveState !== -1) {
+            this.moveState = 2
+          } else {
+            this.scroll(v.type, v.value)
+          }
+        }
+        v.ind !== this.index && (this.index = v.ind)
       }
-      v.ind !== this.index && (this.index = v.ind)
     }
   },
   methods: {
@@ -60,21 +68,21 @@ export default {
       this.moveState = 0
     },
     move (e) {
-      if (this.moveState === 0) {
-        this.moveState = 1
-        this.watchScroll()
-      }
       !this.timer && this.watchScroll()
+      this.moveState = 1
       var moveY = e.touches[0].clientY - this.touch.clientY
       if ((moveY > 0 && this.target.scrollTop === 0) || (moveY < 0 && this.target.scrollTop === this.target.scrollHeight - this.target.offsetHeight)) {
         moveY += this.translate
         this.translate = moveY * (Math.abs(moveY) > 10 ? 1 / Math.log(Math.abs(moveY)) : 1)
       }
     },
-    moveEnd (e) {
+    moveEnd () {
       !this.timer && this.watchScroll()
       this.translate !== 0 && (this.translate = 0)
       this.touch = null
+      if (this.moveState === 2) {
+        this.scroll('init', this.curValue.value)
+      }
       this.moveState = -1
     },
     watchScroll () {
@@ -115,24 +123,25 @@ export default {
         }, 40)
       }
     },
-    scroll (type, index) { // 指定滑动到某个index, type invalid init
-      var s = (index - this.curIndex) * this.height
-      if (s !== 0) {
-        if (type === 'init') { // 0.3s 完成
+    scroll (type, index) { // 指定滑动到某个index, type invalid init change
+      var top = index * this.height
+      if (top !== this.target.scrollTop) {
+        if (type === 'invalid') {
+          this.target.scrollTop = top
+          this.curIndex = index
+          this.revisedTop(index)
+        } else { // 0.3s 完成
           var c = 0
-          var step = s / 10
           var that = this
           var timer = setInterval(function () {
-            that.target.scrollTop += step
+            that.target.scrollTop += (top - that.target.scrollTop) / (10 - c)
             c++
             if (c === 10) {
+              that.curIndex = index
               that.revisedTop(index)
               clearInterval(timer)
             }
           }, 30)
-        } else {
-          this.target.scrollTop += s
-          this.revisedTop(index)
         }
       }
     }
@@ -140,12 +149,12 @@ export default {
   mounted () {
     if (this.type !== 'content') {
       this.target = this.$refs.con
+      this.scroll('init', this.curValue.value)
     }
   },
   created () {
-    if (this.curValue.value !== -1) {
+    if (this.type !== 'content') {
       this.index = this.curValue.ind
-      this.scroll('init', this.curValue.value)
     }
   }
 }
@@ -153,33 +162,30 @@ export default {
 
 <style scoped lang='scss'>
 .picker-item{
-
+  float: left;
 }
 .list-con{
-  position: relative;
   overflow: hidden;
-  position: relative;
-  &:after{
-    content: '';
-    position: absolute;
-    top: 50%;
-    left:0;
-    width:40%;
-    height: 1px;
-    background: #f55;
-  }
+  height: 100%;
 }
 .item-con{
   height:100%;
-  overflow: auto;
-
+  overflow-y: auto;
 }
-
+.space{
+  // background: #f55;
+}
 .item{
   color: #999;
 }
 .item-cur{
   color: #f55;
-  background:rgba(30,200,200,0.5)
+  background: #3ee;
+}
+.content{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>
