@@ -42,8 +42,10 @@ export default {
       translate: 0,
       target: null,
       preTop: -1,
-      moveState: -1, // －1 still 0 start 1 move 2 chain
-      timer: null
+      moveState: -1, // －1 still 0 start 1 move 2 end 3 watch
+      reset: false,
+      timer: null,
+      revisedTimer: null
     }
   },
   watch: {
@@ -51,7 +53,7 @@ export default {
       if (this.type !== 'content') {
         if (v.value !== this.curIndex) {
           if (this.moveState !== -1) {
-            this.moveState = 2
+            this.reset = true
           } else {
             this.scroll(v.type, v.value)
           }
@@ -69,38 +71,49 @@ export default {
     },
     move (e) {
       !this.timer && this.watchScroll()
-      this.moveState = 1
-      var moveY = e.touches[0].clientY - this.touch.clientY
-      if ((moveY > 0 && this.target.scrollTop === 0) || (moveY < 0 && this.target.scrollTop === this.target.scrollHeight - this.target.offsetHeight)) {
-        moveY += this.translate
-        this.translate = moveY * (Math.abs(moveY) > 10 ? 1 / Math.log(Math.abs(moveY)) : 1)
+      if (this.touch) {
+        var moveY = e.touches[0].clientY - this.touch.clientY
+        if ((moveY > 0 && this.target.scrollTop === 0) || (moveY < 0 && this.target.scrollTop === this.target.scrollHeight - this.target.offsetHeight)) {
+          moveY += this.translate
+          this.translate = moveY * (Math.abs(moveY) > 10 ? 1 / Math.log(Math.abs(moveY)) : 1)
+        }
       }
+      this.moveState = 1
     },
     moveEnd () {
-      !this.timer && this.watchScroll()
       this.translate !== 0 && (this.translate = 0)
       this.touch = null
-      if (this.moveState === 2) {
+      if (this.reset) {
+        this.reset = false
         this.scroll('init', this.curValue.value)
       }
-      this.moveState = -1
+      this.moveState = 2
     },
     watchScroll () {
-      if (!this.timer || this.preTop === -1) {
+      if (!this.timer) {
         this.preTop = this.target.scrollTop
         var that = this
         this.timer = setInterval(function () {
           var d = that.preTop - that.target.scrollTop
           that.preTop = that.target.scrollTop
-          if (d !== 0) {
+          if (d !== 0 && (that.moveState === 2 || that.moveState === 1)) {
             that.getIndex(d)
-          } else {
-            that.revisedTop(this.curIndex)
+          } else if (d === 0 && (that.moveState === 1 || that.moveState === 3)) { // 可能touchEnd丢失,将状态改为3，如果下次进入还是3证明滑动已经结束
+            if (that.moveState === 3) {
+              that.moveEnd()
+            } else {
+              that.moveState = 3
+            }
+          } else if (d === 0 && (that.moveState === 2 || that.moveState === -1)) {
+            that.moveState = -1
             that.$emit('change', 'end', that.curIndex, that.index, that.arrIndex)
             clearInterval(that.timer)
             that.timer = null
+            that.revisedTop(that.curIndex)
           }
-        }, 30)
+        }, 25)
+      } else {
+        this.revisedTop(this.curIndex)
       }
     },
     getIndex (d) { // 参数为滚动方向，向上为正方向－1 ＋1
@@ -116,16 +129,28 @@ export default {
       }
     },
     revisedTop (i) {
-      if (this.target.scrollTop !== this.curIndex * this.height) {
+      if (this.target.scrollTop !== i * this.height && !this.timer) {
         var that = this
-        setTimeout(function () {
-          that.target.scrollTop = that.curIndex * that.height
+        that.preTop = that.target.scrollTop
+        if (this.revisedTimer) {
+          clearTimeout(this.revisedTimer)
+          this.revisedTimer = null
+        }
+        this.revisedTimer = setTimeout(function () {
+          that.target.scrollTop = i * that.height
+          if (that.preTop !== that.target.scrollTop) {
+            that.revisedTop(i)
+          } else {
+            clearTimeout(that.revisedTimer)
+            that.revisedTimer = null
+          }
         }, 40)
       }
     },
     scroll (type, index) { // 指定滑动到某个index, type invalid init change
       var top = index * this.height
       if (top !== this.target.scrollTop) {
+        this.moveState = -1
         if (type === 'invalid') {
           this.target.scrollTop = top
           this.curIndex = index
@@ -137,6 +162,7 @@ export default {
             that.target.scrollTop += (top - that.target.scrollTop) / (10 - c)
             c++
             if (c === 10) {
+              that.target.scrollTop !== top && (this.target.scrollTop = top)
               that.curIndex = index
               that.revisedTop(index)
               clearInterval(timer)
