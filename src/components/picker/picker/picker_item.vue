@@ -199,15 +199,11 @@ export default {
   height:100%;
   overflow-y: auto;
 }
-.space{
-  // background: #f55;
-}
 .item{
   color: #999;
 }
 .item-cur{
-  color: #f55;
-  background: #3ee;
+  color: #333;
 }
 .content{
   position: absolute;

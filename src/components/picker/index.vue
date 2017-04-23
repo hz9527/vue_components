@@ -1,7 +1,13 @@
 <template>
 <div class="picker" :style="{'height':itemHeight*showLine +'px'}">
+  <div class="head">
+    <slot name='head'></slot>
+  </div>
   <slot name='center'>
     <div class="center" :style="{'height':itemHeight +'px'}"></div>
+  </slot>
+  <slot name='bg'>
+    <div class="bg"></div>
   </slot>
   <div class="picker-con" :style="{'height':itemHeight*showLine +'px'}">
     <item :data='item.values' :type='item.type' :height='itemHeight' :length='showLine' :need-check='needCheck'
@@ -34,6 +40,10 @@ export default {
     itemHeight: {
       type: Number,
       default: 30// px
+    },
+    eventName: {
+      type: String,
+      default: 'change'
     },
     animation: {
       type: Boolean,
@@ -239,24 +249,32 @@ export default {
     itemChange (type, value, vindex, index) {
       if (this.chooseIndex[index] && this.chooseIndex[index].value !== value) { // set change
         this.$set(this.chooseIndex, index, {value: value, type: 'init', ind: vindex})
-      }
-      if (this.treeList.length > 0) {
-        this.dealLink(index, value)
-      }
-      if (this.needCheck) { // check valid
-        var check = this.chooseIndex.filter(i => i !== -1).map(i => i.value)
-        var result = this.limitMethods(check, vindex)
-        if (JSON.stringify(check) !== JSON.stringify(result)) {
-          var that = this
-          this.chooseIndex.forEach((item, i) => {
-            if (item !== -1 && item.value !== result[item.ind]) {
-              that.$set(that.chooseIndex, i, {value: result[item.ind], type: 'invalid', ind: item.ind})
-            }
-          })
+        if (this.treeList.length > 0) {
+          this.dealLink(index, value)
         }
-      }
-      if (type === 'end') { // emit parent
-        this.$emit('change', this.chooseIndex.filter(i => i !== -1).map(i => i.value))
+        if (this.needCheck) { // check valid
+          var check = this.chooseIndex.filter(i => i !== -1).map(i => i.value)
+          var result = this.limitMethods(check, vindex)
+          if (JSON.stringify(check) !== JSON.stringify(result)) {
+            var that = this
+            this.chooseIndex.forEach((item, i) => {
+              if (item !== -1 && item.value !== result[item.ind]) {
+                that.$set(that.chooseIndex, i, {value: result[item.ind], type: 'invalid', ind: item.ind})
+              }
+            })
+          }
+        }
+        if (type === 'end' || this.active) { // emit parent
+          var emitResult
+          if (this.treeList.length > 0) {
+            emitResult = this.chooseIndex.filter(i => i !== -1).map(i => {
+              return {value: i.value, index: i.ind}
+            })
+          } else {
+            emitResult = this.chooseIndex.filter(i => i !== -1).map(i => i.value)
+          }
+          this.$emit(this.eventName, emitResult)
+        }
       }
     },
     changeList (list, type) {
@@ -299,7 +317,7 @@ export default {
           result.content = item.content
           choose = -1
         }
-        result.width = item.flex * width + '%'
+        result.width = (item.flex || 1) * width + '%'
         result.align = item.align || 'center'
         !result.values && (result.values = [])
         !result.content && (result.content = '')
@@ -352,15 +370,30 @@ export default {
 <style scoped lang='scss'>
 .picker{
   position: relative;
-  .center{
+  .center, .head, .bg{
     position: absolute;
+    z-index: 10;
+  }
+  .center{
+
     top:50%;
     left:50%;
     width:100%;
-    border-top: 1px solid #f55;
-    border-bottom: 1px solid #f55;
-    z-index: 10;
+    border-top: 1px solid #dedede;
+    border-bottom: 1px solid #dedede;
     transform: translate(-50%, -50%);
+  }
+  .head{
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+  }
+  .bg{
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(to bottom, rgba(240,240,240,0.8) 20%,rgba(255,255,255,0) 40%, rgba(240,240,240,0.8) 80%);
   }
 }
 .picker-con{
