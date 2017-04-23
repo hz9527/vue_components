@@ -162,7 +162,7 @@ export default {
             that.target.scrollTop += (top - that.target.scrollTop) / (10 - c)
             c++
             if (c === 10) {
-              that.target.scrollTop !== top && (this.target.scrollTop = top)
+              that.target.scrollTop !== top && (that.target.scrollTop = top)
               that.curIndex = index
               that.revisedTop(index)
               clearInterval(timer)
@@ -189,6 +189,7 @@ export default {
 <style scoped lang='scss'>
 .picker-item{
   float: left;
+  position: relative;
 }
 .list-con{
   overflow: hidden;
