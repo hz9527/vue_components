@@ -85,15 +85,16 @@ picker组件类似桌面端的下拉框，一般使用场景如选择列表（�
 5. 相对于普通列表改动 新增name parentName字段，name可以是字符串或对象；values可能是对象，defaultIndex可能是对象，其他属性参考普通列表
 6. 每个name都是唯一的
 
-|属性|数据类型|作用|是否必填|备注
+属性|数据类型|作用|是否必填|备注
 ---|---|---|---|---|---
-values|Array or Object |用于展示值列（内容列） |与content必填一个 |优先度高于content，当同时设置values content将作为值列
+values|Array or Object |用于展示值列（内容列）|与content必填一个 |优先度高于content，当同时设置values content将作为值列
 content| String|用于间隔（分割列） |与values必填一个 |支持html片段
 defaultIndex|Number or Object |定义默认值，对应到values中数组下标| |默认值为0，联动列表有父列表项为对象，不填每一项默认值均为0
 flex | Number|用于计算横向空间分配|否 |默认值为1
 align| String|值或内容对其方式（即text—align） |否 |默认为‘center’
 name|String or Object |用于定义列表名称，对应子列表的parentName|在联动列表中拥有子列表的列表必填|仅适用于联动列表，name唯一，即不能出现相同name的项
 parentName|String|用于查找父列表|在联动列表中拥有父列表的列表必填|仅适用于联动列表
+
 
 备注：理论上将，picker支持同时拥有多个多级联动列表 类似 北京 － 朝阳 －－ 湖北 － 武汉  
 也支持联动列表与普通列表混合使用 类似 北京 － 朝阳 12点 ： 24 分
