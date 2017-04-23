@@ -253,8 +253,15 @@ export default {
           this.dealLink(index, value)
         }
         if (this.needCheck) { // check valid
-          var check = this.chooseIndex.filter(i => i !== -1).map(i => i.value)
-          var result = this.limitMethods(check, vindex)
+          var check, result
+          if (this.treeList.length > 0) {
+            check = this.chooseIndex.filter(i => i !== -1).map(i => {
+              return {value: i.value, index: i.ind}
+            })
+          } else {
+            check = this.chooseIndex.filter(i => i !== -1).map(i => i.value)
+          }
+          result = this.limitMethods(check, vindex)
           if (JSON.stringify(check) !== JSON.stringify(result)) {
             var that = this
             this.chooseIndex.forEach((item, i) => {
