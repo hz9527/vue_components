@@ -85,7 +85,7 @@ picker组件类似桌面端的下拉框，一般使用场景如选择列表（�
 5. 相对于普通列表改动 新增name parentName字段，name可以是字符串或对象；values可能是对象，defaultIndex可能是对象，其他属性参考普通列表
 6. 每个name都是唯一的
 
-|属性|数据类型|作用|是否必填|备注|
+|属性|数据类型|作用|是否必填|备注
 ---|---|---|---|---|---
 values|Array or Object |用于展示值列（内容列） |与content必填一个 |优先度高于content，当同时设置values content将作为值列
 content| String|用于间隔（分割列） |与values必填一个 |支持html片段
