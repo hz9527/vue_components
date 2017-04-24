@@ -138,8 +138,28 @@ function (arr, ind) {
 
 注：每次滚动一格（更改了当前值），都会校验，如果该列无touch事件会立马滚动到合法位置，如果处于touch事件会在touchend后滚动到合法位置
 在联动列表参数略微有变化
-[{value: xx, index:xx}...],value为当前列下标，index为当前列对应的下标，第二个参数为滚动列在itemList中下标  
+[{value: xx, index:xx, key: xx}...],value为当前列下标，index为当前列对应的下标，key为当前使用key（即父列表当前值）第二个参数为滚动列在itemList中下标  
 这样做主要是方便调用者知道每个下标对应的列（毕竟值列可能有12列，而展示在页面上的可能只有三列）
+```JavaScript
+[ //普通列表与联动列表混合使用也返回对象数组，不过普通列key为undefined，联动列为具体值或null
+  {
+    value: 0,
+    index: 0,
+    key: null
+  },
+  {
+    value: 1,
+    index: 2,
+    key: '湖北'
+  },
+  {
+    value: 0,
+    index: 3,
+    key: '宜昌'
+  }
+]
+```
+
 ***
 ### 属性
 |属性名|数据类型|作用|是否必填|备注
@@ -156,7 +176,9 @@ active|Boolean|发送事件条件|否|默认为false滑动结束发送事件，t
 事件接受参数，类似limitMethods，如果是普通列表即值列当前值下标组成的数组，如果是联动列表则是值列当前下标和值列对应itemData下标组成的对象数组
 ```JavaScript
 [2, 3, 0]// 普通列表 值列当前值下标分别为2， 3， 0
-[{value: 2, index:2},{value: 0, index: 3}] // 在itemList中下标为2的当前值为2...
+[{value: 2, index:2, key: null},{value: 0, index: 3, key: '湖北'},{value:2, index: 4, key: undefined}]
+// 在itemList中下标为2的当前值为2...联动列表中中根列表（无parentName）key为null因为其values是数组而不是对象，key即values或name对象当前使用的数组或name值
+// 在混合使用联动列表和普通列表，普通列也会返回类似对象，不过key为undefined
 ```
 ***
 

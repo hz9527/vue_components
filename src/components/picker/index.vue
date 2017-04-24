@@ -252,18 +252,25 @@ export default {
         if (this.treeList.length > 0) {
           this.dealLink(index, value)
         }
+        var that = this
         if (this.needCheck) { // check valid
           var check, result
           if (this.treeList.length > 0) {
-            check = this.chooseIndex.filter(i => i !== -1).map(i => {
-              return {value: i.value, index: i.ind}
+            check = []
+            this.itemData.forEach((item, ind) => {
+              if (that.chooseIndex[ind] !== -1) {
+                check.push({
+                  value: that.chooseIndex[ind].value,
+                  index: that.chooseIndex[ind].ind,
+                  key: item._key
+                })
+              }
             })
           } else {
             check = this.chooseIndex.filter(i => i !== -1).map(i => i.value)
           }
           result = this.limitMethods(check, vindex)
           if (JSON.stringify(check) !== JSON.stringify(result)) {
-            var that = this
             this.chooseIndex.forEach((item, i) => {
               if (item !== -1 && item.value !== result[item.ind]) {
                 that.$set(that.chooseIndex, i, {value: result[item.ind], type: 'invalid', ind: item.ind})
@@ -274,8 +281,15 @@ export default {
         if (type === 'end' || this.active) { // emit parent
           var emitResult
           if (this.treeList.length > 0) {
-            emitResult = this.chooseIndex.filter(i => i !== -1).map(i => {
-              return {value: i.value, index: i.ind}
+            emitResult = []
+            this.itemData.forEach((item, ind) => {
+              if (that.chooseIndex[ind] !== -1) {
+                emitResult.push({
+                  value: that.chooseIndex[ind].value,
+                  index: that.chooseIndex[ind].ind,
+                  key: item._key
+                })
+              }
             })
           } else {
             emitResult = this.chooseIndex.filter(i => i !== -1).map(i => i.value)
