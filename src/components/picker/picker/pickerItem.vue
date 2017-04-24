@@ -100,10 +100,14 @@ export default {
     },
     watchScroll () {
       if (!this.scrollTimer && !this.revisedTimer) {
-        this.preTop = this.target.scrollTop
+        if (this.timer && this.timer % 5 === 0) {
+          this.preTop = this.target.scrollTop
+        } else {
+          this.preTop = this.target.scrollTop
+        }
         this.timer = requestAnimationFrame(() => {
           var d = this.preTop - this.target.scrollTop
-          this.preTop = this.target.scrollTop
+          // this.preTop = this.target.scrollTop
           this.watchScroll()
           if (d !== 0 && !this.lock) {
             this.getIndex()
@@ -152,16 +156,21 @@ export default {
         this.target.scrollTop = top
         this.curIndex = index
         this.revisedTop()
-      } else if (!this.timer || !this.revisedTimer) { // 高度递减10
+      } else if (!this.timer && !this.revisedTimer) { // 高度递减10
         this.scrollTimer = requestAnimationFrame(() => {
-          if (Math.abs(top - this.target.scrollTop) <= 25) {
+          if (this.preTop === top) {
             cancelAnimationFrame(this.scrollTimer)
             this.scrollTimer = null
             this.moveState = -1
             this.curIndex = index
-            this.revisedTop()
+            this.watchScroll()
           } else {
-            this.target.scrollTop += (top - this.target.scrollTop) > 0 ? 20 : -20
+            this.preTop = this.target.scrollTop
+            if (Math.abs(top - this.target.scrollTop) > 20) {
+              this.target.scrollTop += (top - this.target.scrollTop) > 0 ? 20 : -20
+            } else {
+              this.target.scrollTop = top
+            }
             this.scroll('init', index)
           }
         })
