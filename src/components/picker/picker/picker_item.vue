@@ -1,6 +1,6 @@
 <template>
 <div class="picker-item" :style='{"height":height * length + "px","lineHeight": height + "px"}' >
-  <div v-if='type !== "content"' class="list-con"  @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' >
+  <div v-if='type !== "content"' class="list-con" @touchcancel='moveCancel'  @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' >
     <div class="item-con" ref='con' :style='{"transform":"translate(0," + translate + "px)"}'>
       <div class="space" :style='{"height":height * (length-1)/2 + "px"}'></div>
       <div :class="['item', index === curIndex ? 'item-cur' : '']" :style='{"height":height + "px"}'
@@ -42,7 +42,8 @@ export default {
       translate: 0,
       target: null,
       preTop: -1,
-      moveState: -1, // －1 still 0 start 1 move 2 end 3 watch
+      moveState: -1, // －1 still 0 start 1 move 2 end 3 watch(replace by toucancancel)
+      lock: false, // 在开发者手动设置高度，防止用户此时还在滑动引发curindex变化
       reset: false,
       timer: null,
       revisedTimer: null
@@ -89,6 +90,9 @@ export default {
       }
       this.moveState = 2
     },
+    moveCancel () {
+      this.moveEnd()
+    },
     watchScroll () {
       if (!this.timer) {
         this.preTop = this.target.scrollTop
@@ -98,12 +102,6 @@ export default {
           that.preTop = that.target.scrollTop
           if (d !== 0 && (that.moveState === 2 || that.moveState === 1)) {
             that.getIndex(d)
-          } else if (d === 0 && (that.moveState === 1 || that.moveState === 3)) { // 可能touchEnd丢失,将状态改为3，如果下次进入还是3证明滑动已经结束
-            if (that.moveState === 3) {
-              that.moveEnd()
-            } else {
-              that.moveState = 3
-            }
           } else if (d === 0 && (that.moveState === 2 || that.moveState === -1)) {
             that.moveState = -1
             that.$emit('change', 'end', that.curIndex, that.index, that.arrIndex)
@@ -120,7 +118,7 @@ export default {
       var i = this.target.scrollTop / this.height
       i = i < 0 ? 0 : i > this.data.length - 1 ? this.data.length - 1 : i
       i = d > 0 ? Math.ceil(i) : Math.floor(i)
-      if (this.curIndex !== i) {
+      if (this.curIndex !== i && !this.lock) {
         this.curIndex = i
         // emit
         if (this.needCheck) {
@@ -128,7 +126,7 @@ export default {
         }
       }
     },
-    revisedTop (i) {
+    revisedTop (i, lock) {
       if (this.target.scrollTop !== i * this.height && !this.timer) {
         var that = this
         that.preTop = that.target.scrollTop
@@ -143,14 +141,19 @@ export default {
           } else {
             clearTimeout(that.revisedTimer)
             that.revisedTimer = null
+            if (that.lock) {
+              console.log(2)
+              that.lock = false
+            }
           }
         }, 40)
+      } else if (this.lock) {
+        this.lock = false
       }
     },
     scroll (type, index) { // 指定滑动到某个index, type invalid init change
       var top = index * this.height
       if (top !== this.target.scrollTop) {
-        this.moveState = -1
         if (type === 'invalid') {
           this.target.scrollTop = top
           this.curIndex = index
@@ -158,11 +161,14 @@ export default {
         } else { // 0.3s 完成
           var c = 0
           var that = this
+          this.lock = true
           var timer = setInterval(function () {
             that.target.scrollTop += (top - that.target.scrollTop) / (10 - c)
             c++
             if (c === 10) {
               that.target.scrollTop !== top && (that.target.scrollTop = top)
+              this.moveState = -1
+              // this.lock = false 不能在此处关闭，因为矫正高度还没执行
               that.curIndex = index
               that.revisedTop(index)
               clearInterval(timer)
