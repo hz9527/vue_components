@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import Item from './picker/picker_item'
+import Item from './picker/pickerItem'
 export default {
   name: 'picker',
   props: {
