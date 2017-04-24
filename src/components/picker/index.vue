@@ -348,7 +348,7 @@ export default {
       var list
       if (Object.values(this.tree).some(item => item !== null)) {
         Object.keys(this.tree).forEach(ind => {
-          if (that.tree[ind] === null) {
+          if (that.tree[ind] === null) { // 可能是content也可能是普通的值列
             var result = JSON.parse(JSON.stringify(that.itemList[ind]))
             result._ind = ind
             that.treeList.push(result)
@@ -400,7 +400,7 @@ export default {
     height: 100%;
     top: 0;
     left: 0;
-    background: linear-gradient(to bottom, rgba(240,240,240,0.8) 20%,rgba(255,255,255,0) 40%, rgba(240,240,240,0.8) 80%);
+    background: linear-gradient(to bottom, rgba(240,240,240,0.3) 20%,rgba(255,255,255,0) 40%, rgba(240,240,240,0.3) 80%);
   }
 }
 .picker-con{
