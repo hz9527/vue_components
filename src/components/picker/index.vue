@@ -377,12 +377,18 @@ export default {
 <style scoped lang='scss'>
 .picker{
   position: relative;
-  .center, .head, .bg{
+   .bg, .center, .head{
     position: absolute;
     z-index: 10;
   }
+  .bg{
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(to bottom, rgba(240,240,240,0.3) 10%,rgba(255,255,255,0) 40%,rgba(255,255,255,0) 60%, rgba(240,240,240,0.3) 90%);
+  }
   .center{
-
     top:50%;
     left:50%;
     width:100%;
@@ -394,13 +400,6 @@ export default {
     bottom: 100%;
     left: 0;
     width: 100%;
-  }
-  .bg{
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background: linear-gradient(to bottom, rgba(240,240,240,0.3) 20%,rgba(255,255,255,0) 40%, rgba(240,240,240,0.3) 80%);
   }
 }
 .picker-con{
