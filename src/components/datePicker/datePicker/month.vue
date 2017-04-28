@@ -29,7 +29,7 @@ export default {
       timer: null,
       lock: false, // 在list，start end同时更新时仅执行list的更新，lock当时上锁，更新在定时器中执行
       preRang: [-2, -2],
-      curRang: [-2, -2] // [-2, -2] [-2, x] [x, -2] [-1, x] [-1, x] [0, x] [0, 100] [x, 100] [x, x2]
+      curRang: [-2, -2] // [-2, -2] [-2, x] [x, -2] [-1, x] [-1, 100] [x, 100] [x, x]
     }
   },
   watch: {
@@ -74,21 +74,17 @@ export default {
     checkChange () { // 对比当前范围与新范围变化
       if (JSON.stringify(this.curRang) !== JSON.stringify(this.preRang)) {
         console.log('need change')
-        var arr = this.curRang.concat(this.preRang).sort((a, b) => a - b)
-        arr = arr.filter((item, ind) => {
-          if (item === -2) {
-            return false
-          } else {
-            if ((ind === 3 || ind === 2) && arr[2] === arr[3]) {
-              return false
-            } else if ((ind === 0 || ind === 1) && arr[0] === arr[1]) {
-
-            } else {
-              return true
-            }
-          }
-        })
-        this.change(arr[0], arr[arr.length - 1])
+        var arr, carr, s, e
+        arr = this.curRang.concat(this.preRang)
+        carr = arr.filter(item => item !== -2)
+        if (carr.length === 1) { // none point
+          s = e = arr.find(item => item === carr[0])
+        } else {
+          carr.sort((a, b) => a - b)
+          s = carr[0]
+          e = carr[carr.length - 1]
+        }
+        this.change(s, e)
       }
     },
     watchPoint () {
@@ -109,15 +105,15 @@ export default {
       var si = this.start === -1 ? -1 : parseInt(this.start / 100)
       var ei = this.end === -1 ? -1 : parseInt(this.end / 100)
       var s, e
-      if (si !== -1 && ei !== -1) {
-        if (this.index >= si && this.index <= ei) {
+      if (si !== -1 && ei !== -1) { // choose range
+        if (this.index >= si && this.index <= ei) { // in range
           s = this.index > si ? -1 : this.start % 100
           e = this.index < ei ? 100 : this.end % 100
-        } else {
+        } else { // out range
           s = -2
           e = -2
         }
-      } else {
+      } else { // choose point
         if (si === this.index) {
           s = this.start % 100
           e = -2

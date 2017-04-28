@@ -22,11 +22,15 @@
 import Month from './datePicker/month.vue'
 export default {
   props: {
-    month: { //
+    dateConf: { //
       type: Object,
       default () {
         return {}
       }
+    },
+    selectStart: {
+      type: Boolean,
+      default: true
     },
     point: {
       type: Boolean,
@@ -54,9 +58,38 @@ export default {
   data () {
     return {
       list: [],
+      month: 0,
+      year: 0,
       start: -1,
       end: -1,
       chooseStart: true
+    }
+  },
+  watch: {
+    selectStart (v) {
+      this.chooseStart = v
+    },
+    startTime (v) {
+      if (this.endTime === null) {
+        this.start = this.end = v === null ? -1 : this.trans(v, 'time')
+      } else {
+        if (v === null) {
+          this.start = this.trans(this.endTime, 'time')
+        } else {
+          this.start = this.trans(v, 'time')
+        }
+      }
+    },
+    endTime (v) {
+      if (this.startTime === null) {
+        this.end = this.start = v === null ? -1 : this.trans(v, 'time')
+      } else {
+        if (v === null) {
+          this.end = this.trans(this.startTime, 'time')
+        } else {
+          this.end = this.trans(v, 'time')
+        }
+      }
     }
   },
   methods: {
@@ -71,23 +104,48 @@ export default {
           } else {
             if (this.chooseStart) {
               this.start = Number(target.dataset.ind)
-              this.end < this.start && (this.end = -1)
             } else {
               this.end = Number(target.dataset.ind)
-              this.end < this.start && (this.start = -1)
             }
             this.chooseStart = !this.chooseStart
+            if (this.start > this.end) {
+              if (this.chooseStart) {
+                this.start = this.end
+              } else {
+                this.end = this.start
+              }
+            } else {
+              this.$emit('choose', this.trans(this.start, 'ind'), this.trans(this.end, 'ind'))
+            }
           }
         }
       }
     },
+    init () {
+      this.chooseStart = this.selectStart
+      this.initList()
+      this.start = this.end = -1
+      if (this.startTime || this.endTime) {
+        if (this.startTime) {
+          this.start = this.trans(this.startTime, 'time')
+        }
+        if (this.endTime) {
+          this.end = this.trans(this.endTime, 'time')
+        }
+        this.end === -1 && (this.end = this.start)
+        this.start === -1 && (this.start = this.end)
+      }
+      console.log(this.start)
+    },
     initList () {
       var today, config, month, year, startIndex, endIndex, ti, tj
       today = new Date()
-      config = Object({length: 12, start: today}, this.month)
+      config = Object({length: 12, start: today}, this.dateConf)
       config.start = this.checkDate(config.start)
       month = config.start.getMonth()
       year = config.start.getFullYear()
+      this.month = month
+      this.year = year
       startIndex = config.start.getDate() - 1
       if (config.end) {
         config.end = this.checkDate(config.end)
@@ -134,6 +192,17 @@ export default {
         }
       }
     },
+    trans (v, type) {
+      if (type === 'time') {
+        var date = this.checkDate(v)
+        console.log(date, v)
+        return ((date.getFullYear() - this.year) * 12 + date.getMonth() - this.month) * 100 + date.getDate() - 1
+      } else if (type === 'ind') {
+        var month = parseInt(v / 100) + this.month + 1
+        var day = v % 100 + 1
+        return `${this.year + parseInt(month / 12)}-${month % 12}-${day}`
+      }
+    },
     checkDate (time) {
       if (time.constructor === Date) {
         return time
@@ -142,7 +211,7 @@ export default {
       } else if (typeof time === 'string') {
         time = time.split('-')
         if (time.length === 3) {
-          return new Date(time[0], Number(time[1] - 1, time[2]))
+          return new Date(time[0], Number(time[1] - 1), time[2])
         } else {
           console.error('time is valid')
         }
@@ -150,8 +219,6 @@ export default {
     },
     getTitle (year, month) {
       return `${year}年${month}月`
-    },
-    getState (start, end) {
     },
     getText (year, month, day) {
       if (this.dataList.length > 0) {
@@ -165,7 +232,7 @@ export default {
     }
   },
   created () {
-    this.initList()
+    this.init()
   },
   components: {
     Month

@@ -3,7 +3,7 @@
   <div class="head">
     <router-link to="/">&lt;  index</router-link>
   </div>
-  <date-picker :data-list='dataList'></date-picker>
+  <date-picker :start-time='startTime' :data-list='dataList' @choose='choose'></date-picker>
 </div>
 </template>
 
@@ -39,9 +39,14 @@ export default {
   },
   data () {
     return {
-      startTime: null,
+      startTime: '2017-5-3',
       endTime: null,
       dataList: dataList
+    }
+  },
+  methods: {
+    choose (s, e) {
+      console.log(s, e)
     }
   }
 }
