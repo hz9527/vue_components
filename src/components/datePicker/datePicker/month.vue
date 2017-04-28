@@ -2,7 +2,8 @@
   <div class="month">
     <div class="head">{{title}}</div>
     <day v-for='(day, index) in monthList' :style="index === 0 ? {'marginLeft': 0.535*ind + 'rem'} : ''"
-        :state='day.state' :ind='day.ind' :test='day.text' :day='day.day' :key='day.day'></day>
+        :state='day.state' :ind='day.ind' :text='day.text' :date='day.day' :day='(ind + index) % 7' :key='day.day'></day>
+    <div class="foot"></div>
   </div>
 </template>
 
@@ -37,7 +38,6 @@ export default {
       this.watchPoint()
     },
     end (v, ov) { // 两两定时器互相取消执行
-      // console.log(this.start, this.end, 1)
       this.watchPoint()
     },
     list (v, ov) {
@@ -175,9 +175,16 @@ export default {
 
 <style lang="scss" scoped>
 .head{
-  height: 0.2rem;
-  background: #f55;
+  height: 0.25rem;
+  background: #fff;
+  border-bottom: 1px solid #dcdcdc;
+  text-align: center;
+  line-height: 0.23rem;
   position: sticky;
-  top: 0;
+  top: 0.19rem;
+  z-index: 10;
+}
+.foot{
+  border-bottom: 1px solid #dcdcdc;
 }
 </style>

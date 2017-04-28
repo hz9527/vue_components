@@ -1,6 +1,6 @@
 <template>
 <div class="picker-item" :style='{"height":height * length + "px","lineHeight": height + "px"}' >
-  <div v-if='type !== "content"' class="list-con" @touchcancel='moveCancel'  @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' >
+  <div v-if='type !== "content"' class="list-con" @touchcancel='moveCancel'  @touchstart='moveStart' @touchmove='move' @touchend='moveEnd'>
     <div class="item-con" ref='con' :style='{"transform":"translate(0," + translate + "px)"}'>
       <div class="space" :style='{"height":height * (length-1)/2 + "px"}'></div>
       <div :class="['item', index === curIndex ? 'item-cur' : '']" :style='{"height":height + "px"}'
@@ -100,23 +100,22 @@ export default {
     },
     watchScroll () {
       if (!this.scrollTimer && !this.revisedTimer) {
-        if (this.timer && this.timer % 5 === 0) {
-          this.preTop = this.target.scrollTop
-        } else {
+        if (!this.timer || this.timer % 5 === 0) {
           this.preTop = this.target.scrollTop
         }
         this.timer = requestAnimationFrame(() => {
-          var d = this.preTop - this.target.scrollTop
-          // this.preTop = this.target.scrollTop
           this.watchScroll()
-          if (d !== 0 && !this.lock) {
-            this.getIndex()
-          } else if (d === 0 && (this.moveState === -1 || this.moveState === 2)) {
-            this.moveState = -1
-            cancelAnimationFrame(this.timer)
-            this.timer = null
-            this.revisedTop()
-            this.$emit('change', 'end', this.curIndex, this.index, this.arrIndex)
+          if (this.timer % 5 === 4) {
+            var d = this.preTop - this.target.scrollTop
+            if (d !== 0 && !this.lock) {
+              this.getIndex()
+            } else if (d === 0 && (this.moveState === -1 || this.moveState === 2)) {
+              this.moveState = -1
+              cancelAnimationFrame(this.timer)
+              this.timer = null
+              this.revisedTop()
+              this.$emit('change', 'end', this.curIndex, this.index, this.arrIndex)
+            }
           }
         })
       }
@@ -204,6 +203,7 @@ export default {
 .item-con{
   height:100%;
   overflow-y: auto;
+  // -webkit-overflow-scrolling: touch;
 }
 .item{
   color: #999;
