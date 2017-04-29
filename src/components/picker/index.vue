@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import Item from './picker/pickerItem'
+import Item from './picker/scrollItem.vue'
 export default {
   name: 'picker',
   props: {

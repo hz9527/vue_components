@@ -22,7 +22,7 @@
 import Month from './datePicker/month.vue'
 export default {
   props: {
-    dateConf: { //
+    dateConf: { // {length start end}
       type: Object,
       default () {
         return {}
@@ -62,14 +62,28 @@ export default {
       year: 0,
       start: -1,
       end: -1,
-      chooseStart: true
+      chooseStart: true,
+      step: 0
+    }
+  },
+  computed: {
+    catchList () {
+      var result = {}
+      this.dataList.forEach(item => {
+        var key = typeof item.time === 'string' ? item.time.replace(/-/g, '/') : item.time
+        key = Date.parse(key)
+        result[key] = item.text
+      })
+      return result
     }
   },
   watch: {
     selectStart (v) {
       this.chooseStart = v
+      this.step = 0
     },
     startTime (v) {
+      this.step = 0
       if (this.endTime === null) {
         this.start = this.end = v === null ? -1 : this.trans(v, 'time')
       } else {
@@ -81,6 +95,7 @@ export default {
       }
     },
     endTime (v) {
+      this.step = 0
       if (this.startTime === null) {
         this.end = this.start = v === null ? -1 : this.trans(v, 'time')
       } else {
@@ -115,7 +130,11 @@ export default {
                 this.end = this.start
               }
             } else {
-              this.$emit('choose', this.trans(this.start, 'ind'), this.trans(this.end, 'ind'))
+              if (this.step === 1) {
+                this.$emit('choose', this.trans(this.start, 'ind'), this.trans(this.end, 'ind'))
+              } else {
+                this.step++
+              }
             }
           }
         }
@@ -124,6 +143,7 @@ export default {
     init () {
       this.chooseStart = this.selectStart
       this.initList()
+      this.step = 0
       this.start = this.end = -1
       if (this.startTime || this.endTime) {
         if (this.startTime) {
@@ -135,7 +155,6 @@ export default {
         this.end === -1 && (this.end = this.start)
         this.start === -1 && (this.start = this.end)
       }
-      console.log(this.start)
     },
     initList () {
       var today, config, month, year, startIndex, endIndex, ti, tj
@@ -195,7 +214,6 @@ export default {
     trans (v, type) {
       if (type === 'time') {
         var date = this.checkDate(v)
-        console.log(date, v)
         return ((date.getFullYear() - this.year) * 12 + date.getMonth() - this.month) * 100 + date.getDate() - 1
       } else if (type === 'ind') {
         var month = parseInt(v / 100) + this.month + 1
@@ -213,7 +231,7 @@ export default {
         if (time.length === 3) {
           return new Date(time[0], Number(time[1] - 1), time[2])
         } else {
-          console.error('time is valid')
+          console.error(`${time} in invalid Date`)
         }
       }
     },
@@ -222,11 +240,8 @@ export default {
     },
     getText (year, month, day) {
       if (this.dataList.length > 0) {
-        var result = this.dataList.find(item => {
-          var time = typeof item.time === 'string' ? item.time.replace(/-/g, '/') : item.time
-          return Date.parse(time) === Date.parse(`${year}/${month}/${day}`)
-        })
-        return result ? result.text : ''
+        var result = this.catchList[Date.parse(`${year}/${month}/${day}`)]
+        return result || ''
       }
       return ''
     }
@@ -254,5 +269,8 @@ export default {
   height: 5rem;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+}
+::-webkit-scrollbar{
+  display: none;
 }
 </style>
