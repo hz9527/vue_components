@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Index from '@/components/Index'
 import Picker from '@/components/pages/picker'
 import DatePicker from '@/components/pages/datePicker'
+import Dictionary from '@/components/pages/dictionary'
 Vue.use(Router)
 
 export default new Router({
@@ -21,6 +22,11 @@ export default new Router({
       path: '/datePicker',
       name: 'datePicker',
       component: DatePicker
+    },
+    {
+      path: '/dictionary',
+      name: 'dictionary',
+      component: Dictionary
     }
   ]
 })

@@ -6,6 +6,9 @@
     <div class="item">
       <router-link to="datePicker">datePicker</router-link>
     </div>
+    <div class="item">
+      <router-link to="dictionary">dictionary</router-link>
+    </div>
   </div>
 </template>
 
