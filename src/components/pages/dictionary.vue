@@ -4,7 +4,7 @@
       checkoutData
     </div>
     <div class="con">
-      <dictionary :data='data'/>
+      <dictionary :dealData='dealData' :data='data'/>
     </div>
   </div>
 </template>
@@ -99,7 +99,22 @@ const nameList = {
     {name: '霍元甲', phone: '18071104975'}
   ]
 }
-// console.log(cityList)
+var polyFill = {
+  '厦门': 'XIA$MEN'
+}
+// var polyConf = {
+//   '单': 'SHAN',
+//   '盛': 'SHENG',
+//   '区': 'OU',
+//   '仇': 'QIU'
+// }
+// var polyFill = function (item) { // 如果需要处理将处理部分变为拼音其他部分作为汉字，如['SHAN', '雄信'] ['雄信', 'SHAN'] ['小关羽', 'SHAN', '雄信']
+// // 整个API本计划将ploy处理变为结果不处理变为false，但是考虑到效率故设计为上述，本计划['SHAN', false, false]
+//   if (polyConf[item[0]]) {
+//     return [polyConf[item[0]], item.slice(1)]
+//   }
+//   return item
+// }
 import Dictionary from '../dictionary/index'
 export default {
   components: {
@@ -107,7 +122,21 @@ export default {
   },
   data () {
     return {
-      data: {}
+      data: {},
+      dealData (cb, data) {
+        var name = data.key === 'phone' ? 'phoneList' : 'cityList'
+        var catchData = window.localStorage.getItem(name)
+        var source = window.localStorage.getItem(name + 'source')
+        if (catchData && source === JSON.stringify(data)) {
+          console.log('from catch')
+          return JSON.parse(catchData)
+        } else {
+          catchData = cb(data, polyFill)
+          window.localStorage.setItem(name + 'source', JSON.stringify(data))
+          window.localStorage.setItem(name, JSON.stringify(catchData))
+          return catchData
+        }
+      }
     }
   },
   methods: {

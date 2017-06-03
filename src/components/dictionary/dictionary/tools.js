@@ -1,6 +1,8 @@
 import {Pinyin as pinyin} from './pinyin.js'
-
-export function getData (data) {
+const Division = '$'
+var test = pinyin.convertToPinyin('白娘', Division)
+console.log(test)
+export function getData (data, polyfill) {
   if (!data.key || !data.name) {
     console.error('请配置 key 或 name')
     return
@@ -12,9 +14,8 @@ export function getData (data) {
   if (data.list.constructor === Array) {
     result.index = {}
     if (pinyin.isSupported()) {
-      // var result = pinyin.convertToPinyin('我')
       data.list.forEach(item => {
-        var pin = pinyin.convertToPinyin(item[data.name])
+        var pin = getPinyin(item[data.name], polyfill)
         var i = pin[0]
         if (i) {
           var info = {
@@ -37,11 +38,12 @@ export function getData (data) {
     Object.keys(data.list).forEach(key => {
       result.index.push(key)
       result.list[key] = data.list[key].map(item => {
+        var quanpin = data.pinyin ? item[data.pinyin] : pinyin.isSupported() ? getPinyin(item[data.name], polyfill) : item[data.name]
         return {
           key: item[data.key],
           value: item[data.name],
           index: key,
-          pinyin: pinyin.isSupported() ? pinyin.convertToPinyin(item[data.name]) : item[data.name]
+          pinyin: quanpin
         }
       })
     })
@@ -56,6 +58,31 @@ export function getData (data) {
   return result
 }
 
+function getPinyin (item, polyfill) {
+  var result = false
+  if (typeof polyfill === 'object') {
+    polyfill[item] && (result = polyfill[item])
+  } else if (typeof polyfill === 'function') {
+    result = polyfill(item)
+    if (result.constructor === Array) {
+      result = result.map((info, i) => {
+        if (item.indexOf(info) === -1) {
+          return info
+        } else {
+          return pinyin.convertToPinyin(info, Division)
+        }
+      }).join(Division)
+    } else {
+      result = false
+    }
+  }
+  if (result === false) {
+    return pinyin.convertToPinyin(item, Division)
+  } else {
+    return result
+  }
+}
+
 function sortList (list, key) {
   list.sort((pre, next) => {
     if (key) {
@@ -67,12 +94,16 @@ function sortList (list, key) {
 }
 
 function compare (pre, next, i = 0) {
-  var c = pre.charCodeAt(i) - next.charCodeAt(i)
-  if (c !== 0) {
-    return c
-  } else if (i === Math.min(pre.length, next.length)) {
+  if (i === Math.min(pre.length, next.length)) { // 判断是否至少一个已经比完了
     return pre.length - next.length
-  } else {
+  }
+  var c = pre.charCodeAt(i) - next.charCodeAt(i)
+  if (c !== 0) { // 下标不同
+    if (pre[i] === Division || next[i] === Division) { // 有一个拼音结尾了
+      return pre[i] === Division ? -1 : 1
+    }
+    return c
+  } else { // 下标相同继续比下一位
     return compare(pre, next, ++i)
   }
 }

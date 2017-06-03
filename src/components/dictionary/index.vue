@@ -34,6 +34,16 @@ export default {
           list: []
         }
       }
+    },
+    dealData: {
+      type: Function,
+      default (cb, data) {
+        return cb(data)
+      }
+    },
+    maxHeight: {
+      type: Number,
+      default: 50
     }
   },
   data () {
@@ -41,14 +51,13 @@ export default {
       toastShow: false,
       curChoose: null,
       touch: null,
-      totalHeight: 0,
-      maxHeight: 50
+      totalHeight: 0
     }
   },
   computed: {
     localData () {
       if (this.data.list) {
-        return getData(this.data)
+        return this.dealData(getData, this.data)
       } else {
         return {
           list: [],
