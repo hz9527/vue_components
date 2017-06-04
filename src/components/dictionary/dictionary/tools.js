@@ -1,8 +1,7 @@
 import {Pinyin as pinyin} from './pinyin.js'
 const Division = '$'
-var test = pinyin.convertToPinyin('白娘', Division)
-console.log(test)
 export function getData (data, polyfill) {
+  var support = pinyin.isSupported()
   if (!data.key || !data.name) {
     console.error('请配置 key 或 name')
     return
@@ -13,7 +12,7 @@ export function getData (data, polyfill) {
   }
   if (data.list.constructor === Array) {
     result.index = {}
-    if (pinyin.isSupported()) {
+    if (support) {
       data.list.forEach(item => {
         var pin = getPinyin(item[data.name], polyfill)
         var i = pin[0]
@@ -33,12 +32,14 @@ export function getData (data, polyfill) {
         }
       })
       result.index = Object.keys(result.index)
+    } else {
+      console.error('不兼容')
     }
   } else if (data.list.constructor === Object) {
     Object.keys(data.list).forEach(key => {
       result.index.push(key)
       result.list[key] = data.list[key].map(item => {
-        var quanpin = data.pinyin ? item[data.pinyin] : pinyin.isSupported() ? getPinyin(item[data.name], polyfill) : item[data.name]
+        var quanpin = data.pinyin ? item[data.pinyin] : support ? getPinyin(item[data.name], polyfill) : item[data.name]
         return {
           key: item[data.key],
           value: item[data.name],

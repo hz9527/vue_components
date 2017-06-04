@@ -26,28 +26,27 @@ export default {
   data () {
     return {
       monthList: [],
-      timer: null,
       lock: false, // 在list，start end同时更新时仅执行list的更新，lock当时上锁，更新在定时器中执行
       preRang: [-2, -2],
       curRang: [-2, -2] // [-2, -2] [-2, x] [x, -2] [-1, x] [-1, 100] [x, 100] [x, x]
     }
   },
   watch: {
-    start (v, ov) { // 如果未上锁在定时器内生成新curRange执行check
-      // console.log(this.start, this.end, 0)
-      this.watchPoint()
-    },
-    end (v, ov) { // 两两定时器互相取消执行
-      this.watchPoint()
-    },
     list (v, ov) {
       if (JSON.stringify(v) !== JSON.stringify(ov)) {
         this.lock = true
         this.init()
         setTimeout(() => {
           this.lock = false
-        }, 20)
+        }, 10)
       }
+    },
+    start (v, ov) { // 如果未上锁在定时器内生成新curRange执行check
+      // console.log(this.start, this.end, 0)
+      this.watchPoint()
+    },
+    end (v, ov) { // 两两定时器互相取消执行
+      this.watchPoint()
     }
   },
   methods: {
@@ -89,16 +88,12 @@ export default {
     },
     watchPoint () {
       if (!this.lock) {
-        if (this.timer) {
-          clearTimeout(this.timer)
-          this.timer = null
-        }
-        this.timer = setTimeout(() => {
-          this.computedRang()
-          this.checkChange()
-          clearTimeout(this.timer)
-          this.timer = null
-        }, 30)
+        this.lock = true
+        this.computedRang()
+        this.checkChange()
+        setTimeout(() => {
+          this.lock = false
+        }, 10)
       }
     },
     computedRang () {
