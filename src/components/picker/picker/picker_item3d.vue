@@ -67,6 +67,8 @@ export default {
       if (this.lock) {
         this.scroll('init', this.curValue.value)
         this.lock = false
+      } else {
+        this.$emit('change', 'end', this.curIndex, this.index, this.arrIndex)
       }
       this.moveState = -1
     },
