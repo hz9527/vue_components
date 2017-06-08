@@ -39,7 +39,7 @@ export default {
     return {
       index: 0,
       curIndex: 0,
-      alloyTouch: null,
+      $alloyTouch: null,
       moveState: -1,
       lock: false,
       _delay: 300
@@ -60,17 +60,24 @@ export default {
     }
   },
   methods: {
-    touchStart () {
+    moveStart () {
       this.moveState = 1
     },
-    touchEnd () {
-      if (this.lock) {
-        this.scroll('init', this.curValue.value)
-        this.lock = false
-      } else {
+    moveEnd () {
+      console.log(1)
+      if (!this.lock) {
         this.$emit('change', 'end', this.curIndex, this.index, this.arrIndex)
       }
       this.moveState = -1
+    },
+    touchEnd () {
+      console.log(this.lock, 0)
+      if (this.lock) {
+        this.scroll('init', this.curValue.value)
+        this.lock = false
+        this.moveState = 0
+        return false
+      }
     },
     getIndex (e, d) { // 参数为滚动方向，向上为正方向－1 ＋1
       if (!this.lock && this.moveState === 1) {
@@ -92,10 +99,11 @@ export default {
     scroll (type, index) { // 指定滑动到某个index, type invalid init change
       var top = index * this.height
       if (type === 'invalid') {
-        this.alloyTouch.to(-top, 0)
+        this.$alloyTouch.to(-top, 0)
         this.curIndex = index
       } else {
-        this.alloyTouch.to(-top, this._delay)
+        console.log(this.$alloyTouch)
+        this.$alloyTouch.to(-top, this._delay)
         this.curIndex = index
       }
     }
@@ -103,16 +111,18 @@ export default {
   mounted () {
     if (this.type !== 'content') {
       Transform(this.$refs.con, true)
-      this.alloyTouch = new AlloyTouch({
+      this.$alloyTouch = new AlloyTouch({
         touch: this.$refs.con,
         target: this.$refs.con,
         property: 'translateY',
         min: -this.height * Math.abs((this.data.length - (this.length / 2) + 1.5)),
         max: 0,
         step: this.height,
-        touchStart: this.touchStart,
+        touchStart: this.moveStart,
         touchMove: this.getIndex,
-        animationEnd: this.touchEnd,
+        touchEnd: this.touchEnd,
+        touchCancel: this.touchEnd,
+        animationEnd: this.moveEnd,
         change: this.getIndex
       })
       this.scroll('init', this.curValue.value)
