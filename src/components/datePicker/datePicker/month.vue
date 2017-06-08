@@ -1,7 +1,7 @@
 <template lang="html">
   <div class="month">
     <div class="head">{{title}}</div>
-    <day v-for='(day, index) in monthList' :style="index === 0 ? {'marginLeft': 0.535*ind + 'rem'} : ''"
+    <day v-for='(day, index) in monthList' :style="index === 0 ? {'marginLeft': 0.52*ind + 'rem'} : ''"
         :state='day.state' :ind='day.ind' :text='day.text' :date='day.day' :day='(ind + index) % 7' :key='day.day'></day>
     <div class="foot"></div>
   </div>
@@ -165,6 +165,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.month{
+  padding: 0 0.05rem;
+  position: relative;
+}
 .head{
   height: 0.25rem;
   background: #fff;
@@ -172,7 +176,7 @@ export default {
   text-align: center;
   line-height: 0.23rem;
   position: sticky;
-  top: 0.19rem;
+  top: 0;
   z-index: 10;
 }
 .foot{

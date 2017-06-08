@@ -22,36 +22,39 @@ export default {
 
 <style lang="scss" scoped>
 .item{
-  display: inline-flex;
-  flex-direction:column;
-  justify-content: center;
-  width: 0.535rem;
-  height: 0.535rem;
+  display: inline-block;
+  // display: inline-flex;
+  // flex-direction:column;
+  // justify-content: center;
+  width: 0.52rem;
+  height: 0.51rem;
   box-sizing: border-box;
   line-height: 0.25rem;
-  padding: 0.05rem 0;
-  background-clip: content-box;
-  vertical-align: -webkit-baseline-middle;
+  margin: 0.05rem 0;
+  // background-clip: content-box;
+  text-align: center;
+  vertical-align: middle;
+  border: 0;
   span{
     text-align: center;
-    flex: 1;
+    // flex: 1;
   }
 }
 .left{
-  padding-left: 0.05rem;
+  // padding-left: 0.05rem;
   border-radius: 50% 0 0 50%;
 }
 .right{
-  padding-right: 0.05rem;
+  // padding-right: 0.05rem;
   border-radius: 0 50% 50% 0;
 }
 .start{
-  padding-left: 0.05rem;
+  // padding-left: 0.05rem;
   border-radius: 50% 0 0 50%;
   background-color: #f55;
 }
 .end{
-  padding-right: 0.05rem;
+  // padding-right: 0.05rem;
   border-radius: 0 50% 50% 0;
   background-color: #3ee;
 }
@@ -63,7 +66,7 @@ export default {
   color: #999;
 }
 .both{
-  padding: 0.05rem;
+  // padding: 0.05rem;
   border-radius: 50%;
   background-color: #3e8;
 }

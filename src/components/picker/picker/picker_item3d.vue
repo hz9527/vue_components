@@ -64,14 +64,12 @@ export default {
       this.moveState = 1
     },
     moveEnd () {
-      console.log(1)
       if (!this.lock) {
         this.$emit('change', 'end', this.curIndex, this.index, this.arrIndex)
       }
       this.moveState = -1
     },
     touchEnd () {
-      console.log(this.lock, 0)
       if (this.lock) {
         this.scroll('init', this.curValue.value)
         this.lock = false
@@ -102,7 +100,6 @@ export default {
         this.$alloyTouch.to(-top, 0)
         this.curIndex = index
       } else {
-        console.log(this.$alloyTouch)
         this.$alloyTouch.to(-top, this._delay)
         this.curIndex = index
       }

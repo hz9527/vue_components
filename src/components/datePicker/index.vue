@@ -1,5 +1,5 @@
 <template lang="html">
-<div class="date-picker">
+<div class="date-picker" ref='con'>
   <div class="head">
     <span>周日</span>
     <span>周一</span>
@@ -249,6 +249,11 @@ export default {
   created () {
     this.init()
   },
+  mounted () {
+    if (this.$refs.con.getBoundingClientRect().bottom > window.innerHeight) {
+      this.$refs.con.style.height = this.$refs.con.offsetHeight - (this.$refs.con.getBoundingClientRect().bottom - window.innerHeight) + 'px'
+    }
+  },
   components: {
     Month
   }
@@ -258,19 +263,30 @@ export default {
 <style lang="scss" scoped>
 .head{
   height: 0.2rem;
+  width: 100%;
   display: flex;
   justify-content: space-around;
-  position: sticky;
-  top:-1px;
+  position: absolute;
+  top: 0rem;
+  left: 0;
+  // // position: sticky;
+  // top:0;
+  // left: 0;
   background: #f55;
   z-index: 100;
 }
 .date-picker{
-  height: 5rem;
+  box-sizing: border-box;
+  padding-top: 0.2rem;
+  position: relative;
+  overflow: hidden;
+}
+.date-con {
+  height: 100%;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-}
-::-webkit-scrollbar{
-  display: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 </style>

@@ -204,6 +204,7 @@ export default {
 .item-con{
   height:100%;
   overflow-y: auto;
+  // -webkit-overflow-scrolling: touch;
 }
 .item{
   color: #999;
