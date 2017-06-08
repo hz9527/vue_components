@@ -285,7 +285,7 @@ export default {
   height: 100%;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  &::-webkit-scrollbar {
+  ::-webkit-scrollbar {
     display: none;
   }
 }
