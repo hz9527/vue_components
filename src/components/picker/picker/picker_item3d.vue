@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import {myAlloyTouch as AlloyTouch, myTransform as Transform} from './alloyTouch.js'
+import {myAlloyTouch as AlloyTouch, myTransform as Transform} from 'hz-touch'
 export default {
   props: {
     data: {

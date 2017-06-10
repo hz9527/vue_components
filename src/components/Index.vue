@@ -9,6 +9,9 @@
     <div class="item">
       <router-link to="dictionary">dictionary</router-link>
     </div>
+    <div class="item">
+      <router-link to="swiper">swiper</router-link>
+    </div>
   </div>
 </template>
 

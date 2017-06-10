@@ -4,6 +4,7 @@ import Index from '@/components/Index'
 import Picker from '@/components/pages/picker'
 import DatePicker from '@/components/pages/datePicker'
 import Dictionary from '@/components/pages/dictionary'
+import Swiper from '@/components/pages/swiper'
 Vue.use(Router)
 
 export default new Router({
@@ -27,6 +28,11 @@ export default new Router({
       path: '/dictionary',
       name: 'dictionary',
       component: Dictionary
+    },
+    {
+      path: '/swiper',
+      name: 'swiper',
+      component: Swiper
     }
   ]
 })
