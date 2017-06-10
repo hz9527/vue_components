@@ -64,8 +64,14 @@ export default {
       this.moveState = 1
     },
     moveEnd () {
+      if (this.$alloyTouch.stop === true) {
+        this.$alloyTouch.stop = false
+      }
       if (!this.lock) {
         this.$emit('change', 'end', this.curIndex, this.index, this.arrIndex)
+      } else {
+        this.scroll('init', this.curValue.value)
+        this.lock = false
       }
       this.moveState = -1
     },
@@ -73,12 +79,12 @@ export default {
       if (this.lock) {
         this.scroll('init', this.curValue.value)
         this.lock = false
-        this.moveState = 0
         return false
       }
+      this.moveState = 0
     },
     getIndex (e, d) { // 参数为滚动方向，向上为正方向－1 ＋1
-      if (!this.lock && this.moveState === 1) {
+      if (!this.lock && this.moveState !== -1) {
         if (typeof d !== 'number') {
           d = e
         }
@@ -92,6 +98,8 @@ export default {
             this.$emit('change', 'move', this.curIndex, this.index, this.arrIndex)
           }
         }
+      } else if (this.lock && this.moveState === 0) {
+        this.$alloyTouch.stop = true
       }
     },
     scroll (type, index) { // 指定滑动到某个index, type invalid init change
@@ -116,7 +124,7 @@ export default {
         max: 0,
         step: this.height,
         touchStart: this.moveStart,
-        touchMove: this.getIndex,
+        // touchMove: this.getIndex,
         touchEnd: this.touchEnd,
         touchCancel: this.touchEnd,
         animationEnd: this.moveEnd,

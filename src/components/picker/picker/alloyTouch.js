@@ -422,7 +422,7 @@ var myAlloyTouch, myTransform;
         this.correctionEnd = option.correctionEnd || noop
         this.tap = option.tap || noop
         this.pressMove = option.pressMove || noop
-
+        this.stop = false
         this.preventDefault = this._getValue(option.preventDefault, true)
         this.preventDefaultException = { tagName: /^(INPUT|TEXTAREA|BUTTON|SELECT)$/ }
         this.hasMin = !(this.min === void 0)
@@ -639,9 +639,8 @@ var myAlloyTouch, myTransform;
             var beginTime = new Date()
             var self = this
             var toTick = function () {
-
                 var dt = new Date() - beginTime
-                if (dt >= time) {
+                if (dt >= time || self.stop === true) {
                     el[property] = value
                     onChange && onChange.call(self, value)
                     onEnd && onEnd.call(self, value)
