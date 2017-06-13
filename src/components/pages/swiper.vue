@@ -1,22 +1,32 @@
 <template lang="html">
 <div>
-  <swiper>
+  <swiper :auto='3000'>
     <swiper-item class='item1 item'>1</swiper-item>
     <swiper-item class='item'>2</swiper-item>
     <div slot='test'>
       123
     </div>
   </swiper>
+  <!-- <swiper :list='list' :defaultIndex='2'>
+    <div slot='test'>
+      123
+    </div>
+  </swiper> -->
 </div>
 </template>
 
 <script>
-import Swiper from '../swiper/index.vue'
+import Swiper from '../swiper/newIndex.vue'
 import SwiperItem from '../swiper/swiper/swiper_item'
 export default {
   components: {
     Swiper,
     SwiperItem
+  },
+  data () {
+    return {
+      list: [1, 2, 3]
+    }
   }
 }
 </script>
