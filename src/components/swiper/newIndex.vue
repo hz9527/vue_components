@@ -7,7 +7,7 @@
   </div>
   <slot name='test'></slot>
   <div class="index">
-    {{curIndex}}
+    <div :class="['index-item', curIndex === (n - 1) ? 'index-active' : '']" v-for='n in itemLength'></div>
   </div>
 </div>
 </template>
@@ -39,7 +39,8 @@ export default {
       curIndex: 0,
       $alloyTouch: null,
       itemWidth: 0,
-      _move: false
+      _move: false,
+      _timer: null
     }
   },
   computed: {
@@ -81,8 +82,13 @@ export default {
     },
     autoMove () {
       if (this.curAuto) {
-        setTimeout(() => {
-          this.$alloyTouch.to(this.$alloyTouch.target.translateX - this.itemWidth, this.curAuto.move)
+        if (this._timer) {
+          clearTimeout(this._timer)
+          this._timer = null
+        }
+        this._timer = setTimeout(() => {
+          var x = this.$alloyTouch.target.translateX % this.itemWidth
+          this.$alloyTouch.to(this.$alloyTouch.target.translateX - x - this.itemWidth, this.curAuto.move)
         }, this.curAuto.wait)
       }
     },
@@ -122,11 +128,30 @@ export default {
 .swiper {
   width: 100%;
   overflow: hidden;
+  position: relative;
 }
 .con, .clone {
   // width: 100%;
   display: flex;
   justify-content: center;
   background: #3ee;
+}
+.index {
+  display: flex;
+  position: absolute;
+  bottom: 5%;
+  left: 0;
+  width: 100%;
+  justify-content: center;
+}
+.index-item {
+  width: 0.1rem;
+  height: 0.1rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  margin: 0 0.05rem;
+}
+.index-active {
+  background: rgba(255, 255, 255, 0.9)
 }
 </style>

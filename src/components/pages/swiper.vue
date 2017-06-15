@@ -1,11 +1,8 @@
 <template lang="html">
 <div>
-  <swiper :auto='3000'>
+  <swiper :auto='2000'>
     <swiper-item class='item1 item'>1</swiper-item>
     <swiper-item class='item'>2</swiper-item>
-    <div slot='test'>
-      123
-    </div>
   </swiper>
   <!-- <swiper :list='list' :defaultIndex='2'>
     <div slot='test'>
