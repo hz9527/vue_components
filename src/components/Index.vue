@@ -12,6 +12,9 @@
     <div class="item">
       <router-link to="swiper">swiper</router-link>
     </div>
+    <div class="item">
+      <router-link to="lazyLoad">lazyLoad</router-link>
+    </div>
   </div>
 </template>
 
