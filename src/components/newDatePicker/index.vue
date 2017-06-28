@@ -9,9 +9,10 @@
     <span>周五</span>
     <span>周六</span>
   </div>
-  <div @click='chooseDay'>
-    <month :start='start' :end='end' :index='index' :title='month.title' :ind='month.index' :list='month.list'
-       v-for='(month, index) in list' :key='month.title'></month>
+  <div>
+    {{list}}
+    <!-- <month :start='start' :end='end' :index='index' :title='month.title' :ind='month.index' :list='month.list'
+       v-for='(month, index) in list' :key='month.title'></month> -->
   </div>
 </div>
 </template>
@@ -34,29 +35,24 @@ export default {
       type: [String, null],
       default: null
     },
-    computedText: {
+    computedInfo: {
       type: Function,
-      default () { // time start end
+      default (time, start, end) { // time start end
         return ''
       }
     },
-    computedChoose: {
+    computedValid: {
       type: Function,
       default () {
         return true
-      }
-    },
-    formateTime: {
-      type: Function,
-      default () {
-
       }
     }
   },
   computed: {
     list () {
       var conf = this.checkConf()
-      conf.end = conf.end || this.computedTime(conf.start, void 0, length - 1)
+      conf.end = conf.end || this.computedTime(conf.start, void 0, conf.length - 1)
+      return this.getList(conf)
     }
   },
   data () {
@@ -69,18 +65,52 @@ export default {
   methods: {
     getList (conf) {
       var timeArr = this.getTimeArr(conf.start)
+      var startArr = timeArr.slice()
+      var endArr = this.getTimeArr(conf.end)
+      timeArr[2] = 1
       var list = []
       var i = -1
-      var j = -1
-      var days = new Date()
       while (++i < conf.length) {
-        var day = {
-          state: '',
-          day: '',
-          date: '',
-          text: '',
+        var days = new Date(timeArr[0], timeArr[1] + 1, 0).getDate()
+        var index = new Date(timeArr[0], timeArr[1], 1).getDay()
+        var j = -1
+        list[i] = {
+          index: index,
+          days: []
+        }
+        while (++j < days) {
+          timeArr[2]++
+          var state, text, info
+          // 计算合法性
+          state = this.computedValid()
+          state = state ? 'normal' : 'invalid'
+          if (state === 'normal') {
+            if (this.compareTimeArr(timeArr, startArr) < 0) {
+              state = 'invalid'
+            } else if (this.compareTimeArr(timeArr, endArr) > 0) {
+              state = 'invalid'
+            }
+          }
+          // 计算text
+          text = this.compareTimeArr(timeArr, startArr) === 0 ? conf.today.text : ''
+          // 计算info
+          info = this.computedInfo(timeArr, conf.start, conf.end)
+          list[i].days.push({
+            state: state,
+            day: j + 1,
+            date: `${timeArr[0]}/${timeArr[1] + 1}/${j + 1}`,
+            text: text,
+            info: info
+          })
+        }
+        if (timeArr[1] === 11) {
+          timeArr[1] = 0
+          timeArr[0]++
+        } else {
+          timeArr[1]++
         }
       }
+      return list
     },
     checkConf () {
       var props = this.dateConf
@@ -97,10 +127,10 @@ export default {
       }
       if (props.today) {
         if (typeof props.today === 'object') {
-          if (!'important' in props.today) {
+          if (!('important' in props.today)) {
             invalid = true
           }
-          if (!'text' in props.today || typeof props.today.text !== 'string') {
+          if (!('text' in props.today) || typeof props.today.text !== 'string') {
             invalid = true
           }
         } else {
@@ -127,8 +157,6 @@ export default {
     checkTime (start, end) {
       if (start && end) {
         return end - start > 0
-      } else if (!start) {
-        return false
       } else {
         return true
       }
@@ -138,10 +166,10 @@ export default {
     },
     getTimeArr (time) {
       return [time.getFullYear(), time.getMonth(), time.getDate()]
+    },
+    compareTimeArr (arr1, arr2) {
+      return (arr1[0] - arr2[0]) * 1000 + (arr1[1] - arr2[1]) * 50 + (arr1[2] - arr2[2])
     }
-  },
-  created () {
-    this.initList()
   },
   components: {
     Month

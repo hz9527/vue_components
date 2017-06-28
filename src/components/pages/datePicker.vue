@@ -32,7 +32,7 @@ var dataList = [
   {time: '2017-5-26', text: '¥900'},
   {time: '2017-5-27', text: '¥800'}
 ]
-import DatePicker from '../datePicker'
+import DatePicker from '../newDatePicker'
 export default {
   components: {
     DatePicker
