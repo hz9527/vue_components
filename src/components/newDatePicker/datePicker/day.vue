@@ -1,16 +1,19 @@
 <template lang="html">
-  <span :class="['item', state]" :data-ind='ind'>
+  <span :class="['item', state]" :data-ind='data' :data-date='date'>
     <span>{{day}}</span>
     <span v-if='text'>{{text}}</span>
+    <span v-if='info'>{{info}}</span>
   </span>
 </template>
 
 <script>
 export default {
   props: {
-    day: Number,
-    ind: Number,
+    day: [Number, String],
+    date: String,
+    data: String,
     text: String,
+    info: String,
     state: String
   }
 }

@@ -39,7 +39,7 @@ export default {
   },
   data () {
     return {
-      startTime: '2017-5-3',
+      startTime: '2017/7/3',
       endTime: null,
       dataList: dataList
     }

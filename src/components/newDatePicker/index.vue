@@ -9,10 +9,9 @@
     <span>周五</span>
     <span>周六</span>
   </div>
-  <div>
-    {{list}}
-    <!-- <month :start='start' :end='end' :index='index' :title='month.title' :ind='month.index' :list='month.list'
-       v-for='(month, index) in list' :key='month.title'></month> -->
+  <div @click='chooseItem'>
+    <month :during='during' :index='index' :title='month.title' :ind='month.ind' :list='month.days'
+       v-for='(month, index) in list' :key='month.title'></month>
   </div>
 </div>
 </template>
@@ -26,6 +25,10 @@ export default {
       default () { // length, start end today type
         return {}
       }
+    },
+    chooseStart: {
+      type: Boolean,
+      default: true
     },
     startTime: {
       type: [String, null], // 2017/6/8
@@ -51,7 +54,7 @@ export default {
   computed: {
     conf () {
       var conf = this.checkConf()
-      conf.end = conf.end || this.computedTime(conf.start, void 0, conf.length - 1)
+      conf.end = conf.end || this.computedTime(conf.start, void 0, conf.length)
       return conf
     },
     list () {
@@ -77,6 +80,18 @@ export default {
     }
   },
   watch: {
+    list: {
+      immediate: true,
+      handler () {
+        this.$catchStart = this.list[0].days[0].date.split('/').map(item => Number(item))
+      }
+    },
+    chooseStart: {
+      immediate: true,
+      handler () {
+        this.curChooseStart = this.chooseStart
+      }
+    },
     startTime: {
       immediate: true,
       handler (v) {
@@ -98,30 +113,55 @@ export default {
     return {
       curStart: 0,
       curEnd: 0,
-      chooseStart: true,
+      curChooseStart: true,
       $catchStart: null
     }
   },
   methods: {
+    chooseItem (e) {
+      if (e.target.nodeName === 'SPAN') {
+        var target
+        if ('ind' in e.target.dataset) {
+          target = e.target
+        } else {
+          target = e.target.parentNode
+        }
+        if ('ind' in target.dataset && !target.classList.contains('invalid')) {
+          var ind = target.dataset.ind
+          if (this.curChooseStart) {
+            this.curStart = ind
+            if (this.conf.type === 'time') {
+              this.curChooseStart = false
+            } else {
+              this.curEnd = ind
+            }
+          } else {
+            this.curEnd = ind
+          }
+        }
+      }
+    },
     getList () {
       var timeArr = this.getTimeArr(this.conf.start)
       var startArr = timeArr.slice()
       var endArr = this.getTimeArr(this.conf.end)
-      timeArr[2] = 1
       var list = []
       var i = -1
+      // this.$catchStart = timeArr.slice()
+      // this.$catchStart[2] = 1
       while (++i < this.conf.length) {
         var days = new Date(timeArr[0], timeArr[1] + 1, 0).getDate()
         var index = new Date(timeArr[0], timeArr[1], 1).getDay()
         var j = 0
+        timeArr[2] = 1
         list[i] = {
           ind: index,
-          index: i,
+          title: `${timeArr[0]}年${timeArr[1] + 1}月`,
           days: []
         }
         while (++j <= days) {
           timeArr[2]++
-          var state, text, info
+          let state, text, info
           // 计算合法性
           state = this.computedValid()
           state = state ? 'normal' : 'invalid'
@@ -133,15 +173,15 @@ export default {
             }
           }
           // 计算text
-          text = this.compareTimeArr(timeArr, startArr) === 0 ? this.conf.today.text : ''
+          text = this.compareTimeArr(timeArr, startArr) === 0 ? this.conf.today : j
           // 计算info
           info = this.computedInfo(timeArr, this.conf.start, this.conf.end)
           list[i].days.push({
             state: state,
-            day: j,
-            data: `${i}.${j > 9 ? j : '0' + j}`,
+            day: text,
+            data: `${i},${j - 1 > 9 ? j : '0' + j}`,
             date: `${timeArr[0]}/${timeArr[1] + 1}/${j}`,
-            text: text,
+            text: '',
             info: info
           })
         }
@@ -167,20 +207,8 @@ export default {
       if (!this.checkTime(props.start, props.end)) {
         invalid = true
       }
-      if (props.today) {
-        if (typeof props.today === 'object') {
-          if (!('important' in props.today)) {
-            invalid = true
-          }
-          if (!('text' in props.today) || typeof props.today.text !== 'string') {
-            invalid = true
-          }
-        } else {
-          today = {
-            text: props.today,
-            important: false
-          }
-        }
+      if (props.today && typeof props.today !== 'string') {
+        invalid = true
       }
       if (invalid) {
         props = {}
@@ -189,10 +217,7 @@ export default {
       return Object.assign({
         length: 12,
         start: new Date(),
-        today: {
-          important: true,
-          text: '今天'
-        },
+        today: '今天',
         type: 'time' // time point
       }, props, today)
     },
@@ -238,11 +263,7 @@ export default {
     transDate (date) {
       var arr = date.split('/')
       arr = arr.map(item => Number(item))
-      if (!this.$catchStart) {
-        this.$catchStart = this.list[0].days[0].date.split('/')
-        this.$catchStart = this.$catchStart.map(item => Number(item))
-      }
-      return [(arr[0] - this.$catchStart[0]) * 12 + arr[1] - this.$catchStart[1], (arr[2] - 1) > 9 ? arr[2] - 1 : '0' + arr[2] - 1].join(',')
+      return [(arr[0] - this.$catchStart[0]) * 12 + arr[1] - this.$catchStart[1], arr[2] > 9 ? arr[2] : '0' + arr[2]].join(',')
     }
   },
   components: {
