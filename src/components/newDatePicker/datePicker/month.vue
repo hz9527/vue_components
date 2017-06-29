@@ -19,7 +19,8 @@ export default {
       default () {
         return []
       }
-    }
+    },
+    computedText: Function
   },
   data () {
     return {
@@ -55,7 +56,7 @@ export default {
             }
             for (var i = range[0]; i <= range[1]; i++) {
               if (this.list[i].state !== 'invalid') {
-                var state
+                var state, text
                 if (curRange) {
                   if (i < curRange[0].value || i > curRange[1].value) {
                     state = 'normal'
@@ -69,7 +70,8 @@ export default {
                 } else {
                   state = 'normal'
                 }
-                this.$set(this.monthList, i, Object.assign(this.monthList[i], {state: state}))
+                text = this.computedText(state, this.monthList[i].date)
+                this.$set(this.monthList, i, Object.assign(this.monthList[i], {state: state, text: text}))
               }
             }
           }
@@ -80,8 +82,8 @@ export default {
   methods: {
     getRange (v) {
       if (v) {
-        var start = v[0] === 0 ? 0 : v[0].split(',').map(item => Number(item))
-        var end = v[1] === 0 ? 0 : v[0].split(',').map(item => Number(item))
+        var start = v[0] === 0 ? 0 : v[0]
+        var end = v[1] === 0 ? 0 : v[1]
         var sPoint, ePoint
         if (start !== 0 && start[0] === this.index) {
           sPoint = {
@@ -110,6 +112,14 @@ export default {
           }
         }
         if (sPoint || ePoint) {
+          if (sPoint && ePoint) {
+            if (sPoint.value === ePoint.value) {
+              sPoint = ePoint = {
+                type: 'both',
+                value: sPoint.value
+              }
+            }
+          }
           if (!sPoint) {
             sPoint = ePoint
           }

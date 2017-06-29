@@ -10,7 +10,7 @@
     <span>周六</span>
   </div>
   <div @click='chooseItem'>
-    <month :during='during' :index='index' :title='month.title' :ind='month.ind' :list='month.days'
+    <month :during='during' :index='index' :title='month.title' :ind='month.ind' :list='month.days' :computedText='computedText'
        v-for='(month, index) in list' :key='month.title'></month>
   </div>
 </div>
@@ -38,10 +38,16 @@ export default {
       type: [String, null],
       default: null
     },
+    computedText: {
+      type: Function,
+      default () {
+        return ''
+      }
+    },
     computedInfo: {
       type: Function,
       default (time, start, end) { // time start end
-        return ''
+        return 'test'
       }
     },
     computedValid: {
@@ -71,7 +77,7 @@ export default {
         if (this.curEnd === 0) {
           end = 0
         } else {
-          end = this.getSide(this.curStart, -1)
+          end = this.getSide(this.curEnd, -1)
         }
       } else {
         end = start
@@ -115,31 +121,79 @@ export default {
       curEnd: 0,
       curChooseStart: true,
       $catchStart: null
+      // $touch: null
     }
   },
   methods: {
     chooseItem (e) {
-      if (e.target.nodeName === 'SPAN') {
-        var target
-        if ('ind' in e.target.dataset) {
-          target = e.target
-        } else {
-          target = e.target.parentNode
-        }
-        if ('ind' in target.dataset && !target.classList.contains('invalid')) {
-          var ind = target.dataset.ind
-          if (this.curChooseStart) {
-            this.curStart = ind
-            if (this.conf.type === 'time') {
-              this.curChooseStart = false
-            } else {
-              this.curEnd = ind
+      var ind = this.getInd(e.target)
+      if (ind !== false) {
+        if (this.curChooseStart) {
+          this.curStart = ind
+          if (this.conf.type === 'time') {
+            this.curChooseStart = false
+            if (this.curEnd !== 0 && ind[0] * 100 + ind[1] > this.curEnd[0] * 100 + this.curEnd[1]) {
+              this.curEnd = 0
             }
           } else {
             this.curEnd = ind
           }
+        } else {
+          this.curEnd = ind
+          if (this.curStart !== 0 && ind[0] * 100 + ind[1] < this.curStart[0] * 100 + this.curStart[1]) {
+            this.curStart = 0
+          }
+          this.curChooseStart = true
         }
       }
+    },
+    // touchStart (e) {
+    //   if (e.touches.length === 1) {
+    //     this.$touch = e.touches[0]
+    //   } else {
+    //     this.$touch = null
+    //   }
+    // },
+    // move (e) {
+    //   if (this.$touch) {
+    //     var needStop = Math.abs(e.touches[0].clientX - this.$touch.clientX) / Math.abs(e.touches[0].clientY - this.$touch.clientY) > 2
+    //     if (needStop) {
+    //       e.preventDefault()
+    //       var ind = this.getInd(e.target)
+    //       if (ind) {
+    //         console.log(ind)
+    //         if (this.curChooseStart) {
+    //           if (this.curStart[0] !== ind[0] || this.curStart[1] !== ind[1]) {
+    //             this.curStart = ind
+    //             if (this.conf.type === 'point') {
+    //               this.curEnd = ind
+    //             }
+    //           }
+    //         } else {
+    //           if (this.curEnd[0] !== ind[0] || this.curEnd[1] !== ind[1]) {
+    //             this.curEnd = ind
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // },
+    // touchEnd () {
+    //   this.$touch = null
+    //   if (this.conf.type === 'time') {
+    //     this.curChooseStart = !this.curChooseStart
+    //   }
+    // },
+    getInd (target) {
+      if (target.nodeName === 'SPAN') {
+        if (!('ind' in target.dataset)) {
+          target = target.parentNode
+        }
+        if ('ind' in target.dataset && !target.classList.contains('invalid')) {
+          return target.dataset.ind.split(',').map(item => Number(item))
+        }
+      }
+      return -1
     },
     getList () {
       var timeArr = this.getTimeArr(this.conf.start)
@@ -147,8 +201,6 @@ export default {
       var endArr = this.getTimeArr(this.conf.end)
       var list = []
       var i = -1
-      // this.$catchStart = timeArr.slice()
-      // this.$catchStart[2] = 1
       while (++i < this.conf.length) {
         var days = new Date(timeArr[0], timeArr[1] + 1, 0).getDate()
         var index = new Date(timeArr[0], timeArr[1], 1).getDay()
@@ -160,15 +212,14 @@ export default {
           days: []
         }
         while (++j <= days) {
-          timeArr[2]++
           let state, text, info
           // 计算合法性
-          state = this.computedValid()
+          state = this.computedValid(timeArr.slice())
           state = state ? 'normal' : 'invalid'
           if (state === 'normal') {
-            if (this.compareTimeArr(timeArr, startArr) < 0) {
+            if (this.compareTimeArr(timeArr.slice(), startArr) < 0) {
               state = 'invalid'
-            } else if (this.compareTimeArr(timeArr, endArr) > 0) {
+            } else if (this.compareTimeArr(timeArr.slice(), endArr) > 0) {
               state = 'invalid'
             }
           }
@@ -179,11 +230,12 @@ export default {
           list[i].days.push({
             state: state,
             day: text,
-            data: `${i},${j - 1 > 9 ? j : '0' + j}`,
+            data: `${i},${j - 1 > 9 ? j - 1 : '0' + (j - 1)}`,
             date: `${timeArr[0]}/${timeArr[1] + 1}/${j}`,
             text: '',
             info: info
           })
+          timeArr[2]++
         }
         if (timeArr[1] === 11) {
           timeArr[1] = 0
@@ -239,9 +291,9 @@ export default {
     },
     getSide (str, type) {
       var result
-      var arr = str.split(',')
-      arr[0] = Number(arr[0])
-      arr[1]--
+      var arr = str
+      // arr[0] = Number(arr[0])
+      // arr[1]--
       while (this.list[arr[0]].days[arr[1]].state !== 'normal') {
         if (this.list[arr[0]].days.length > arr[1] && arr[1] >= 0) {
           arr[1] = arr[1] + type
@@ -255,7 +307,7 @@ export default {
         }
       }
       if (result !== 0) {
-        return arr.join(',')
+        return arr
       } else {
         return result
       }
@@ -263,7 +315,7 @@ export default {
     transDate (date) {
       var arr = date.split('/')
       arr = arr.map(item => Number(item))
-      return [(arr[0] - this.$catchStart[0]) * 12 + arr[1] - this.$catchStart[1], arr[2] > 9 ? arr[2] : '0' + arr[2]].join(',')
+      return [(arr[0] - this.$catchStart[0]) * 12 + arr[1] - this.$catchStart[1], arr[2] - 1]
     }
   },
   components: {

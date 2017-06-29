@@ -3,7 +3,8 @@
   <div class="head">
     <router-link to="/">&lt;  index</router-link>
   </div>
-  <date-picker :start-time='startTime' :data-list='dataList' @choose='choose'></date-picker>
+  <date-picker :start-time='startTime' :computedText='getText' :computedValid='checkValid' :data-list='dataList'
+    :computedInfo='getInfo' @choose='choose'></date-picker>
 </div>
 </template>
 
@@ -47,6 +48,27 @@ export default {
   methods: {
     choose (s, e) {
       console.log(s, e)
+    },
+    checkValid (arr) {
+      var day = new Date(...arr).getDay()
+      if (day === 0 || day === 6) {
+        return false
+      } else {
+        return true
+      }
+    },
+    getText (state, time) {
+      if (state === 'both') {
+        return '当天'
+      } else if (state === 'start') {
+        return '开始'
+      } else if (state === 'end') {
+        return '结束'
+      }
+      return ''
+    },
+    getInfo (time) {
+      return `$${parseInt(Math.random() * 1000)}`
     }
   }
 }

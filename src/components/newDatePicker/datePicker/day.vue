@@ -30,8 +30,11 @@ export default {
   border-radius: 50%;
   padding: 0.05rem;
   background-clip: content-box;
+  vertical-align: middle;
   span{
     text-align: center;
+    font-size: 0.12rem;
+    line-height: 0.12rem;
   }
 }
 .start{
@@ -44,7 +47,6 @@ export default {
   background-color: #e88;
 }
 .invalid{
-  // background-color: #dedede;
   color: #999;
 }
 .both{
