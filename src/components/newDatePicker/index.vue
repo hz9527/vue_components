@@ -49,36 +49,77 @@ export default {
     }
   },
   computed: {
-    list () {
+    conf () {
       var conf = this.checkConf()
       conf.end = conf.end || this.computedTime(conf.start, void 0, conf.length - 1)
-      return this.getList(conf)
+      return conf
+    },
+    list () {
+      return this.getList()
+    },
+    during () {
+      var start, end
+      if (this.curStart === 0) {
+        start = 0
+      } else {
+        start = this.getSide(this.curStart, 1)
+      }
+      if (this.conf.type === 'time') {
+        if (this.curEnd === 0) {
+          end = 0
+        } else {
+          end = this.getSide(this.curStart, -1)
+        }
+      } else {
+        end = start
+      }
+      return [start, end]
+    }
+  },
+  watch: {
+    startTime: {
+      immediate: true,
+      handler (v) {
+        if (v) {
+          this.curStart = this.transDate(v)
+        }
+      }
+    },
+    endTime: {
+      immediate: true,
+      handler (v) {
+        if (v) {
+          this.curEnd = this.transDate(v)
+        }
+      }
     }
   },
   data () {
     return {
-      curStart: -1,
-      curEnd: -1,
-      chooseStart: true
+      curStart: 0,
+      curEnd: 0,
+      chooseStart: true,
+      $catchStart: null
     }
   },
   methods: {
-    getList (conf) {
-      var timeArr = this.getTimeArr(conf.start)
+    getList () {
+      var timeArr = this.getTimeArr(this.conf.start)
       var startArr = timeArr.slice()
-      var endArr = this.getTimeArr(conf.end)
+      var endArr = this.getTimeArr(this.conf.end)
       timeArr[2] = 1
       var list = []
       var i = -1
-      while (++i < conf.length) {
+      while (++i < this.conf.length) {
         var days = new Date(timeArr[0], timeArr[1] + 1, 0).getDate()
         var index = new Date(timeArr[0], timeArr[1], 1).getDay()
-        var j = -1
+        var j = 0
         list[i] = {
-          index: index,
+          ind: index,
+          index: i,
           days: []
         }
-        while (++j < days) {
+        while (++j <= days) {
           timeArr[2]++
           var state, text, info
           // 计算合法性
@@ -92,13 +133,14 @@ export default {
             }
           }
           // 计算text
-          text = this.compareTimeArr(timeArr, startArr) === 0 ? conf.today.text : ''
+          text = this.compareTimeArr(timeArr, startArr) === 0 ? this.conf.today.text : ''
           // 计算info
-          info = this.computedInfo(timeArr, conf.start, conf.end)
+          info = this.computedInfo(timeArr, this.conf.start, this.conf.end)
           list[i].days.push({
             state: state,
-            day: j + 1,
-            date: `${timeArr[0]}/${timeArr[1] + 1}/${j + 1}`,
+            day: j,
+            data: `${i}.${j > 9 ? j : '0' + j}`,
+            date: `${timeArr[0]}/${timeArr[1] + 1}/${j}`,
             text: text,
             info: info
           })
@@ -169,6 +211,38 @@ export default {
     },
     compareTimeArr (arr1, arr2) {
       return (arr1[0] - arr2[0]) * 1000 + (arr1[1] - arr2[1]) * 50 + (arr1[2] - arr2[2])
+    },
+    getSide (str, type) {
+      var result
+      var arr = str.split(',')
+      arr[0] = Number(arr[0])
+      arr[1]--
+      while (this.list[arr[0]].days[arr[1]].state !== 'normal') {
+        if (this.list[arr[0]].days.length > arr[1] && arr[1] >= 0) {
+          arr[1] = arr[1] + type
+        } else {
+          if (this.list.length > arr[0] && arr[0] >= 0) {
+            arr[0] = arr[0] + type
+          } else {
+            result = 0
+            break
+          }
+        }
+      }
+      if (result !== 0) {
+        return arr.join(',')
+      } else {
+        return result
+      }
+    },
+    transDate (date) {
+      var arr = date.split('/')
+      arr = arr.map(item => Number(item))
+      if (!this.$catchStart) {
+        this.$catchStart = this.list[0].days[0].date.split('/')
+        this.$catchStart = this.$catchStart.map(item => Number(item))
+      }
+      return [(arr[0] - this.$catchStart[0]) * 12 + arr[1] - this.$catchStart[1], (arr[2] - 1) > 9 ? arr[2] - 1 : '0' + arr[2] - 1].join(',')
     }
   },
   components: {
