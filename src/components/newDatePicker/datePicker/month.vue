@@ -2,7 +2,7 @@
   <div class="month">
     <div class="head">{{title}}</div>
     <day v-for='(day, index) in monthList' :style="index === 0 ? {'marginLeft': 0.535*ind + 'rem'} : ''"
-        :state='day.state' :ind='day.ind' :test='day.text' :day='day.day' :key='day.day'></day>
+        :state='day.state' :info='day.info' :text='day.text' :data='day.data' :date='day.date' :day='day.day' :key='day.day'></day>
   </div>
 </template>
 
@@ -13,8 +13,7 @@ export default {
     title: String,
     ind: Number,
     index: Number,
-    start: Number,
-    end: Number,
+    during: Array,
     list: {
       type: Array,
       default () {
@@ -24,97 +23,110 @@ export default {
   },
   data () {
     return {
-      monthList: [],
-      timer: null,
-      curRang: [-1, -1]
+      monthList: []
     }
   },
   watch: {
-    start (v, ov) {
-      console.log(v, ov)
-      this.needChange(v, ov, 'start')
-      // if (this.timer) {
-      //   clearTimeout(this.timer)
-      //   this.timer = null
-      // } else {
-      //   this.timer = setTimeout(() => {
-      //     this.needChange(v, ov, 'start')
-      //   }, 20)
-      // }
+    list: {
+      immediate: true,
+      handler (v, ov) {
+        this.monthList = JSON.parse(JSON.stringify(v))
+      }
     },
-    end (v, ov) {
-      this.needChange(v, ov, 'end')
-      // if (this.timer) {
-      //   clearTimeout(this.timer)
-      //   this.timer = null
-      // } else {
-      //   this.timer = setTimeout(() => {
-      //     this.needChange(v, ov, 'end')
-      //   }, 20)
-      // }
-    }
-  },
-  methods: {
-    change (start, end) {
-      this.monthList.forEach((item, index) => {
-        console.log('check')
-        var result = {}
-        if (item.state !== 'invalid') {
-          if (item.ind === start && item.ind !== end && item.state !== 'start') {
-            result = Object.assign(item, {state: 'start'})
-          } else if (item.ind === end && item.ind !== start && item.state !== 'end') {
-            result = Object.assign(item, {state: 'end'})
-          } else if (item.ind === end && item.ind === start && item.state !== 'both') {
-            result = Object.assign(item, {state: 'both'})
-          } else if (start !== -1 && end !== -1) {
-            if (item.ind > start && item.ind < end && item.state !== 'during') {
-              result = Object.assign(item, {state: 'during'})
-            } else if ((item.ind < start || item.ind > end) && item.state !== 'normal') {
-              result = Object.assign(item, {state: 'normal'})
+    during: {
+      immediate: true,
+      handler (v, ov) {
+        if (JSON.stringify(v) !== JSON.stringify(ov)) {
+          var curRange, preRange, range
+          if (v) {
+            curRange = this.getRange(v)
+          }
+          if (ov) {
+            preRange = this.getRange(ov)
+          }
+          if ((curRange || preRange) && JSON.stringify(curRange) !== JSON.stringify(preRange)) {
+            if (!curRange) {
+              range = preRange.map(item => item.value)
+            } else if (!preRange) {
+              range = curRange.map(item => item.value)
+            } else {
+              // 这里可以优化
+              range = [Math.min(curRange[0].value, preRange[0].value), Math.max(curRange[1].value, preRange[1].value)]
             }
-          } else if ((start === -1 || end === -1) && item.state !== 'normal') {
-            result = Object.assign(item, {state: 'noraml'})
-          }
-        }
-        if ('state' in result) {
-          console.log('change...')
-          this.$set(this.monthList, index, result)
-        }
-      })
-    },
-    checkChange () { // 对比当前范围与新范围变化
-
-    },
-    needChange (v, ov, type) { // v maybe is -1
-      var vi = v === -1 ? -1 : parseInt(v / 100)
-      var ovi = ov === -1 ? -1 : parseInt(ov / 100)
-      var ai = ai === -1 ? -1 : parseInt((type === 'start' ? this.end : this.start) / 100)
-      // v上一次或这一次在内部
-      // type start v上次在或这次前方，ai在内部或后方
-      // type end v上次或这次在后方，ai在内部或前方
-      if (vi === this.index || ovi === this.index) {
-        this.change(this.start, this.end)
-      } else {
-        if (type === 'start') {
-          if ((vi !== -1 && vi < this.index) || (ovi !== -1 && ovi < this.index) && ai >= this.index) {
-            this.change(this.start, this.end)
-          }
-        } else if (type === 'end') {
-          if ((vi !== -1 && vi > this.index) || (ovi !== -1 && ovi > this.index) && ai <= this.index) {
-            this.change(this.start, this.end)
+            for (var i = range[0]; i <= range[1]; i++) {
+              if (this.list[i].state !== 'invalid') {
+                var state
+                if (curRange) {
+                  if (i < curRange[0].value || i > curRange[1].value) {
+                    state = 'normal'
+                  } else if (i > curRange[0].value && i < curRange[1].value) {
+                    state = 'during'
+                  } else if (i === curRange[0].value) {
+                    state = curRange[0].type
+                  } else {
+                    state = curRange[1].type
+                  }
+                } else {
+                  state = 'normal'
+                }
+                this.$set(this.monthList, i, Object.assign(this.monthList[i], {state: state}))
+              }
+            }
           }
         }
       }
-    },
-    init () {
-      this.list.forEach((item, index) => {
-        this.$set(this.monthList, index, item)
-      })
-      this.curRange = [this.start, this.end]
+    }
+  },
+  methods: {
+    getRange (v) {
+      if (v) {
+        var start = v[0] === 0 ? 0 : v[0].split(',').map(item => Number(item))
+        var end = v[1] === 0 ? 0 : v[0].split(',').map(item => Number(item))
+        var sPoint, ePoint
+        if (start !== 0 && start[0] === this.index) {
+          sPoint = {
+            type: 'start',
+            value: start[1]
+          }
+        }
+        if (end !== 0 && end[0] === this.index) {
+          ePoint = {
+            type: 'end',
+            value: end[1]
+          }
+        }
+        if (start !== 0 && end !== 0) {
+          if ((sPoint || this.index > start[0]) && this.index < end[0]) {
+            ePoint = {
+              type: 'during',
+              value: this.list.length - 1
+            }
+          }
+          if (ePoint && this.index > start[0]) {
+            sPoint = {
+              type: 'during',
+              value: 0
+            }
+          }
+        }
+        if (sPoint || ePoint) {
+          if (!sPoint) {
+            sPoint = ePoint
+          }
+          if (!ePoint) {
+            ePoint = sPoint
+          }
+          return [sPoint, ePoint]
+        } else {
+          return false
+        }
+      } else {
+        return false
+      }
     }
   },
   created () {
-    this.init()
+
   },
   components: {
     Day
