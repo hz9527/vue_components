@@ -193,7 +193,7 @@ export default {
           return target.dataset.ind.split(',').map(item => Number(item))
         }
       }
-      return -1
+      return false
     },
     getList () {
       var timeArr = this.getTimeArr(this.conf.start)
