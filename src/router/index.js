@@ -6,6 +6,7 @@ import DatePicker from '@/components/pages/datePicker'
 import Dictionary from '@/components/pages/dictionary'
 import Swiper from '@/components/pages/swiper'
 import LazyLoad from '@/components/pages/lazyLoad'
+import newSwiper from '@/components/pages/newSwiper'
 Vue.use(Router)
 
 export default new Router({
@@ -39,6 +40,11 @@ export default new Router({
       path: '/lazyload',
       name: 'lazyLoad',
       component: LazyLoad
+    },
+    {
+      path: '/new_swiper',
+      name: 'newSwiper',
+      component: newSwiper
     }
   ]
 })
