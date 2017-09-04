@@ -31,9 +31,31 @@ export default {
   },
   methods: {
     initData () {
+      this._type = ''
+      this.chooseIndex = []
+      var preValue
+      var listInd = -1
       this.list.map(item => {
-        if (item.data && item.data.constructor === Array) {
-          this._type = 'tree'
+        if (!this._type) {
+          if (item.data && item.data.constructor === Array) {
+            this._type = 'tree'
+          } else if (item.list && item.list.constructor === Array) {
+            this._type = 'normal'
+          }
+        }
+        if (item.data || item.list) {
+          listInd++
+          var list
+          if (item.data) {
+            item.data.forEach(info => {
+              if (item.parent === null) {
+                list = info
+
+              }
+            })
+          }
+        } else {
+          return item
         }
       })
     }
