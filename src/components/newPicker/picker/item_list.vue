@@ -1,7 +1,9 @@
 <template lang="html">
   <div class="con" ref='con'>
-    <div class="list-item" v-for='item in list'>
-      {{item.name}}
+    <div class="list-con" ref='listCon'>
+      <div class="list-item" v-for='item in list' :style="{'height': itemHeight}">
+        {{item.name}}
+      </div>
     </div>
   </div>
 </template>
@@ -19,6 +21,10 @@ export default {
     emptyHeight: {
       type: Number,
       default: 0
+    },
+    itemHeight: {
+      type: Number,
+      default: 30
     }
   },
   data () {
@@ -40,16 +46,25 @@ export default {
       property: 'translateY',
       target: this.$refs.con,
       max: this.emptyHeight,
-      min: -this.$refs.con.offsetHeight + this.emptyHeight + 30,
+      min: -this.$refs.con.offsetHeight + this.emptyHeight + this.itemHeight,
       step: 30
     })
+    this._alloyTouch.to(this.emptyHeight, 100)
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.con {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(50,50,50,0.5);
+  z-index: 100;
+}
 .list-item {
-  height: 30px;
   background: #f55;
 }
 </style>

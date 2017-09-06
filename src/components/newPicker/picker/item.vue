@@ -1,6 +1,6 @@
 <template lang="html">
-  <div class="picker-item" :style='{"height": showLine * 30 + "px"}'>
-    <list v-if="type !== 'division'" :list='list' :emptyHeight='(showLine - 1) / 2 * 30' />
+  <div class="picker-item" :style='{"height": showLine * itemHeight + "px"}'>
+    <list v-if="type !== 'division'" :list='list' :emptyHeight='(showLine - 1) / 2 * itemHeight' :itemHeight='itemHeight' />
     <div class="item-division" v-if="type === 'division'" v-html='content'>
     </div>
   </div>
@@ -40,6 +40,10 @@ export default {
       type: Number, // 奇数
       default: 5
     },
+    itemHeight: {
+      type: Number,
+      default: 30
+    },
     flex: {
       type: Number,
       default: 1
@@ -54,5 +58,7 @@ export default {
 <style lang="scss" scoped>
 .picker-item {
   overflow: hidden;
+  position: relative;
+  flex: 1;
 }
 </style>
