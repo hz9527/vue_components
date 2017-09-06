@@ -2,13 +2,13 @@
   <div class="content">
     <div class="head">
       <router-link to="/">&lt;  index</router-link>
-      <picker />
+      <picker :list='normalList' />
     </div>
   </div>
 </template>
 
 <script>
-import Picker from '../newPicker'
+import Picker from '../newPicker/index2.vue'
 var normalList = [
   {
     flex: 2,
@@ -213,6 +213,11 @@ var childList = [
 ]
 console.log(normalList, childList)
 export default {
+  data () {
+    return {
+      normalList: normalList
+    }
+  },
   components: {
     Picker
   }
