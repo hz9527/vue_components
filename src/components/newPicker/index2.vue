@@ -1,7 +1,8 @@
 <template lang="html">
   <div class="picker-con">
-    <item :class='item.className' v-for='(item, i) in curList' :key='i' :type='item.type' :index='item.index'
-     :list='item.list' :content='item.content' />
+    <item :class='item.className' v-for='(item, i) in curList' :key='i' :type='item.type' :index='item.index' :flex='item.flex'
+     :list='item.list' :content='item.content' :chooseIndex='chooseList[i]' :className='item.className' :align='item.align'
+     :showLine='showLine' :itemHeight='itemHeight' @check='check' @moveEnd='moveEnd' />
    <div class="center"></div>
   </div>
 </template>
@@ -15,12 +16,20 @@ export default {
       default () {
         return []
       }
+    },
+    showLine: {
+      type: Number,
+      default: 5 // 必须为奇数
+    },
+    itemHeight: {
+      type: Number,
+      default: 30 // unit px
     }
   },
   data () {
     return {
-      chooseList: [],
-      curList: []
+      chooseList: [], // index list
+      curList: [] // conf & list({name value})
     }
   },
   watch: {
@@ -46,7 +55,8 @@ export default {
               }),
               content: '',
               flex: item.flex || 1,
-              className: item.className || ''
+              className: item.className || '',
+              align: item.align || 'center'
             }
           } else {
             this.chooseList.push(-1)
@@ -56,11 +66,20 @@ export default {
               list: [],
               content: item.content || '',
               flex: item.flex || 1,
-              className: item.className || ''
+              className: item.className || '',
+              align: item.align || 'center'
             }
           }
         })
       }
+    }
+  },
+  methods: {
+    check (v, type, index) {
+      console.log(v, type, index)
+    },
+    moveEnd (v) {
+      console.log(v)
     }
   },
   components: {
