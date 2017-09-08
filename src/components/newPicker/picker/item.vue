@@ -1,6 +1,6 @@
 <template lang="html">
   <div class="picker-item" :style='style'>
-    <list v-if="type !== 'division'" :curIndex='curIndex' :list='list' :emptyHeight='(showLine - 1) / 2 * itemHeight'
+    <list v-if="type !== 'division'" :curIndex='chooseIndex' :list='list' :emptyHeight='(showLine - 1) / 2 * itemHeight'
      :itemHeight='itemHeight' @change='change' @moveEnd='end' />
     <div class="item-division" :style="{'height': itemHeight}" v-if="type === 'division'" v-html='content'>
     </div>
@@ -16,10 +16,7 @@ export default {
     content: String,
     index: Number,
     chooseIndex: Number,
-    needCheck: {
-      type: Boolean,
-      default: false
-    },
+    needCheck: Boolean,
     showLine: Number,
     itemHeight: Number,
     flex: Number,
@@ -44,21 +41,22 @@ export default {
     chooseIndex: {
       immediate: true,
       handler (v) {
-        if (v !== this.curIndex) {
-          this.curIndex = v
-        }
+        // console.log(v, 2222, this.curIndex)
+        // if (v !== this.curIndex) {
+        //   this.curIndex = v
+        // }
       }
     }
   },
   methods: {
     change (v) {
-      this.curIndex = v
+      // this.curIndex = v
       if (this.type === 'tree' || this.needCheck) {
         this.$emit('check', v, this.type, this.index)
       }
     },
     end (v) {
-      this.curIndex = v
+      // this.curIndex = v
       this.$emit('moveEnd', v)
     }
   },

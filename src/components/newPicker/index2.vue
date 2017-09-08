@@ -2,7 +2,7 @@
   <div class="picker-con">
     <item :class='item.className' v-for='(item, i) in curList' :key='i' :type='item.type' :index='item.index' :flex='item.flex'
      :list='item.list' :content='item.content' :chooseIndex='chooseList[i]' :className='item.className' :align='item.align'
-     :showLine='showLine' :itemHeight='itemHeight' @check='check' @moveEnd='moveEnd' />
+     :showLine='showLine' :itemHeight='itemHeight' :needCheck='needCheck' @check='check' @moveEnd='moveEnd' />
    <div class="center"></div>
   </div>
 </template>
@@ -16,6 +16,10 @@ export default {
       default () {
         return []
       }
+    },
+    limitMethods: {
+      type: [Function, Boolean],
+      default: false
     },
     showLine: {
       type: Number,
@@ -32,17 +36,24 @@ export default {
       curList: [] // conf & list({name value})
     }
   },
+  computed: {
+    needCheck () {
+      return typeof this.limitMethods === 'function'
+    }
+  },
   watch: {
     list: {
       immediate: true,
       handler (v) {
         this.chooseList = []
+        var listInd = -1
         this.curList = v.map((item, i) => {
           if (item.list) {
             this.chooseList.push(item.defaultIndex || 0)
+            listInd++
             return {
               type: 'normal',
-              index: i,
+              index: listInd,
               list: item.list.map(info => {
                 if (typeof info !== 'object') {
                   return {
@@ -62,7 +73,7 @@ export default {
             this.chooseList.push(-1)
             return {
               type: 'division',
-              index: i,
+              index: -1,
               list: [],
               content: item.content || '',
               flex: item.flex || 1,
@@ -76,7 +87,23 @@ export default {
   },
   methods: {
     check (v, type, index) {
-      console.log(v, type, index)
+      if (typeof this.limitMethods === 'function') {
+        var checkList = this.chooseList.filter(item => item !== -1)
+        checkList[index] = v
+        var result = this.limitMethods(checkList, index, type)
+        if (result) {
+          var ind = -1
+          this.chooseList.forEach((item, i) => {
+            if (item !== -1) {
+              ind++
+              if (item !== result[ind]) {
+                this.$set(this.chooseList, i, result[ind])
+                console.log(this.chooseList, 555)
+              }
+            }
+          })
+        }
+      }
     },
     moveEnd (v) {
       console.log(v)

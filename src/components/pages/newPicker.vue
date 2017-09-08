@@ -2,7 +2,7 @@
   <div class="content">
     <div class="head">
       <router-link to="/">&lt;  index</router-link>
-      <picker :list='normalList' />
+      <picker :list='numList' :limitMethods='limitMethods' />
     </div>
   </div>
 </template>
@@ -73,6 +73,21 @@ var normalList = [
         value: 11
       }
     ]
+  }
+]
+var numList = [
+  {
+    flex: 2,
+    defaultIndex: 1,
+    list: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+  },
+  {
+    flex: 1,
+    content: '--'
+  },
+  {
+    flex: 2,
+    list: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
   }
 ]
 var childList = [
@@ -212,10 +227,18 @@ var childList = [
   }
 ]
 console.log(normalList, childList)
+function limitMethods (list, index, type) {
+  if (list[0] < list[1]) {
+    return [list[0], list[0]]
+  }
+  return false
+}
 export default {
   data () {
     return {
-      normalList: normalList
+      normalList: normalList,
+      numList: numList,
+      limitMethods: limitMethods
     }
   },
   components: {
