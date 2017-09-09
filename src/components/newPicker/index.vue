@@ -1,10 +1,17 @@
 <template lang="html">
   <div class="picker">
-    test
+    <item :class='item.className' v-for='(item, i) in curList' :key='i' :list='item.list' :content='item.content'  :type='item.type'
+     :listIndex='item.listIndex' :index='item.index' :chooseIndex='chooseList[i]' :needCheck='needCheck' @check='check' @moveEnd='moveEnd'
+     :align='item.align' :showLine='showLine' :flex='item.flex' :className='item.className' :itemHeight='itemHeight' />
+    <div class="center" :style="{'height': itemHeight + 'px'}"></div>
   </div>
 </template>
 
 <script>
+import {formateList, getTree, initList, getChildTree} from './picker/utils'
+// initList arg[formateList, chooseList, tree] return {computedList, curChoose}
+// getChildTree arg[formateList, name, chooseList.slice(), tree] return {curChoose, changeList}
+import Item from './picker/item'
 export default {
   props: {
     list: {
@@ -12,116 +19,117 @@ export default {
       default () {
         return []
       }
+    },
+    limitMethods: {
+      type: [Function, Boolean],
+      default: false
+    },
+    showLine: {
+      type: Number,
+      default: 5 // 必须为奇数
+    },
+    itemHeight: {
+      type: Number,
+      default: 30 // unit px
     }
   },
   data () {
     return {
-      chooseIndex: {},
-      itemData: [],
-      _tree: null
+      chooseList: [],
+      curList: [],
+      _tree: null,
+      _forMatList: null
+    }
+  },
+  computed: {
+    needCheck () {
+      return typeof this.limitMethods === 'function'
     }
   },
   watch: {
     list: {
       immediate: true,
-      handler () {
-        this.initData()
+      handler (l) {
+        this.initData(l)
       }
     }
   },
   methods: {
-    initData () {
-      this.chooseIndex = []
-      var preValue
-      var listInd = -1
-      this.list.map(item => {
-        if (item.data || item.list) {
-          listInd++
-          var defaultIndex = item.defaultIndex || 0
-          var list
-          if (item.data) {
-            item.data.forEach(info => {
-              if (item.parent === null) {
-                list = info.list
-                defaultIndex = info.defaultIndex || defaultIndex
-                preValue = {
-                  name: info.name,
-                  value: this.getValue(list[defaultIndex])
-                }
-              } else {
-
-              }
+    initData (list) {
+      this._forMatList = formateList(list)
+      this._tree = getTree(list)
+      var result = initList(this._forMatList, this.chooseList, this._tree)
+      this.chooseList = result.curChoose
+      this.curList = result.computedList
+    },
+    check (v, type, index, listIndex) {
+      this.$set(this.chooseList, listIndex, v)
+      if (type === 'tree') {
+        var treeResult = getChildTree(this._forMatList, this._forMatList[listIndex].name, this.chooseList.slice(), this._tree)
+        treeResult.changeList.forEach(ind => {
+          this.$set(this.curList, ind, this._forMatList[ind])
+        })
+        treeResult.curChoose.forEach((item, i) => {
+          if (item !== this.chooseList[i]) {
+            this.$nextTick(() => {
+              this.$set(this.chooseList, i, item)
             })
           }
-        } else {
-          return this.getItem('', item)
-        }
-      })
-    },
-    initTree (list) {
-      this._tree = {}
-      list.forEach(item => {
-        var defaultIndex
-        var type = this.getType(item)
-        if (type === 'tree' || type === 'normal') {
-          defaultIndex = item.defaultIndex || 0
-          if (type === 'tree') {
-            var treeItem
-            if (item.parentName === null) {
-              defaultIndex = item.data[0].defaultIndex || defaultIndex
-              treeItem = {
-                parent: -1,
-                children: null,
-                value: this.getValue(item.data[0][defaultIndex])
-              }
-            } else {
-              if (this._tree[item.parentName]) {
-                this._tree[item.parentName].children = item.name
+        })
+      }
+      if (this.needCheck) {
+        var checkList = this.chooseList.filter(item => item !== -1)
+        checkList[index] = v
+        var result = this.limitMethods(checkList, index, type)
+        if (result) {
+          var ind = -1
+          this.chooseList.forEach((item, i) => { // 迭代器参数为局部作用域变量，相当于let，因此不需要使用闭包
+            if (item !== -1) {
+              ind++
+              if (item !== result[ind]) {
+                this.$nextTick(() => {
+                  this.$set(this.chooseList, i, result[ind])
+                })
               }
             }
-            this._tree = treeItem
-          }
+          })
         }
-      })
-    },
-    getTreeValue (name) {
-
-    },
-    getChildList (parentName, data) { // {name: value}
-
-    },
-    getType (item) {
-      if (item.data && item.data.constructor === Array) {
-        return 'tree'
-      } else if (item.list && item.list.constructor === Array) {
-        return 'normal'
-      }
-      return 'division'
-    },
-    getItem (type, item) {
-      if (type === 'list') {
-        return Object.assign({
-          flex: 1,
-          className: '',
-          textAlign: 'center'
-        }, item)
-      } else {
-        return Object.assign({
-          flex: 1,
-          className: ''
-        }, item)
       }
     },
-    getValue (item) {
-      if (typeof item === 'string') {
-        return item
-      } else {
-        return item.value
-      }
+    moveEnd (v, i) {
+      this.$set(this.chooseList, i, v)
     }
+  },
+  components: {
+    Item
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.picker {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+.center {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  transform: translate(0, -50%);
+  &:after, &:before {
+    content: '';
+    position: absolute;
+    top: 0%;
+    left: 0;
+    width: 200%;
+    height: 1px;
+    border: 1px solid #ccc;
+    transform: scale(0.5) translate(-50%, 0);
+  }
+  &:after {
+    top: 100%;
+  }
+}
 </style>

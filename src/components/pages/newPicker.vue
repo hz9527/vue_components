@@ -3,12 +3,13 @@
     <div class="head">
       <router-link to="/">&lt;  index</router-link>
       <picker :list='numList' :limitMethods='limitMethods' />
+      <picker :list='childList' />
     </div>
   </div>
 </template>
 
 <script>
-import Picker from '../newPicker/index2.vue'
+import Picker from '../newPicker/index.vue'
 var normalList = [
   {
     flex: 2,
@@ -93,8 +94,8 @@ var numList = [
 var childList = [
   {
     flex: 1,
-    value: 'sheng',
-    parent: null,
+    name: 'sheng',
+    parentName: null,
     defaultIndex: 1,
     data: [
       {
@@ -123,8 +124,8 @@ var childList = [
   },
   {
     flex: 1,
-    value: 'shi',
-    parent: 'sheng',
+    name: 'shi',
+    parentName: 'sheng',
     defaultIndex: 0,
     data: [
       {
@@ -172,7 +173,7 @@ var childList = [
       },
       {
         defaultIndex: 1,
-        parent: '1',
+        parent: '3',
         list: ['西安', '安康', '汉中', '宝鸡']
       }
     ]
@@ -184,8 +185,8 @@ var childList = [
   },
   {
     flex: 1,
-    value: '',
-    parent: 'shi',
+    name: '',
+    parentName: 'shi',
     data: [
       {
         parent: ['1-1', '1-2', '1-3', '1-4'],
@@ -226,7 +227,6 @@ var childList = [
     ]
   }
 ]
-console.log(normalList, childList)
 function limitMethods (list, index, type) {
   if (list[0] < list[1]) {
     return [list[0], list[0]]
@@ -238,6 +238,7 @@ export default {
     return {
       normalList: normalList,
       numList: numList,
+      childList: childList,
       limitMethods: limitMethods
     }
   },

@@ -1,7 +1,7 @@
 <template lang="html">
   <div class="item-con">
     <div class="list-con" ref='listCon'>
-      <div class="list-item" v-for='item in list' :style="{'height': itemHeight}">
+      <div :class="['list-item', className]" v-for='item in list' :style="{'height': itemHeight + 'px', 'lineHeight': itemHeight + 'px'}">
         {{item.name}}
       </div>
     </div>
@@ -16,6 +16,7 @@ export default {
     list: Array,
     curIndex: Number,
     emptyHeight: Number,
+    className: String,
     itemHeight: Number
   },
   data () {
@@ -31,7 +32,9 @@ export default {
       immediate: true,
       handler (v) {
         if (this._alloyTouch) {
-          this._alloyTouch.setMin(-this.$refs.listCon.offsetHeight + this.emptyHeight + this.itemHeight)
+          this.$nextTick(() => {
+            this._alloyTouch.setMin(-this.$refs.listCon.offsetHeight + this.emptyHeight + this.itemHeight)
+          })
         }
       }
     },
@@ -46,10 +49,10 @@ export default {
           }
           if (this._state === 'animation') {
             this._state = 'stop'
-            this._alloyTouch.fixed = true
+            this._alloyTouch.immediateStop = true
+            return
           }
           this.$nextTick(() => {
-            this._alloyTouch.fixed = false
             this._alloyTouch.to(this.emptyHeight - v * this.itemHeight, 100)
           })
         }
@@ -63,7 +66,7 @@ export default {
       property: 'translateY',
       target: this.$refs.listCon,
       max: this.emptyHeight,
-      min: -this.$refs.listCon.offsetHeight + this.emptyHeight + this.itemHeight,
+      min: Math.min(-this.$refs.listCon.offsetHeight + this.emptyHeight + this.itemHeight, this.emptyHeight),
       step: this.itemHeight,
       change: this.change,
       touchStart: this.moveStart,
@@ -84,8 +87,9 @@ export default {
         this._lock = false
         this._alloyTouch.to(this.emptyHeight - this.curIndex * this.itemHeight, 100)
         return false
+      } else {
+        this._state = 'animation'
       }
-      this._state = 'animation'
     },
     animationEnd (v) {
       if (this._state !== 'stop') {
@@ -94,6 +98,12 @@ export default {
       }
     },
     change (v) {
+      if (this._alloyTouch.immediateStop) {
+        this.$nextTick(() => {
+          this._alloyTouch.immediateStop = false
+          this._alloyTouch.to(this.emptyHeight - this.curIndex * this.itemHeight, 100)
+        })
+      }
       if (this._lock !== true && (this._state === 'move' || this._state === 'animation')) {
         var result = Math.round((this.emptyHeight - v) / this.itemHeight)
         if (result > -1 && result < this.list.length && result !== this._curIndex) {

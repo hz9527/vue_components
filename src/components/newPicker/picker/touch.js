@@ -417,6 +417,7 @@ AlloyTouch = (function () {
         this.tap = option.tap || noop
         this.pressMove = option.pressMove || noop
         this.stop = false
+        this.immediateStop = false
         this.preventDefault = this._getValue(option.preventDefault, true)
         this.preventDefaultException = { tagName: /^(INPUT|TEXTAREA|BUTTON|SELECT)$/ }
         this.hasMin = !(this.min === void 0)
@@ -444,6 +445,9 @@ AlloyTouch = (function () {
     }
 
     AlloyTouch.prototype = {
+        setMin: function (v) {
+          this.min = v
+        },
         _getValue: function (obj, defaultValue) {
             return obj === void 0 ? defaultValue : obj
         },
@@ -634,6 +638,12 @@ AlloyTouch = (function () {
             var self = this
             var toTick = function () {
                 var dt = new Date() - beginTime
+                if (self.immediateStop) {
+                  el[property] = dv * ease(dt / time) + current
+                  onChange && onChange.call(self, el[property])
+                  onEnd && onEnd.call(self, el[property])
+                  return
+                }
                 if (dt >= time || self.stop === true) {
                     el[property] = value
                     onChange && onChange.call(self, value)

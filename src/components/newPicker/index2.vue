@@ -1,8 +1,8 @@
 <template lang="html">
   <div class="picker-con">
-    <item :class='item.className' v-for='(item, i) in curList' :key='i' :type='item.type' :index='item.index' :flex='item.flex'
-     :list='item.list' :content='item.content' :chooseIndex='chooseList[i]' :className='item.className' :align='item.align'
-     :showLine='showLine' :itemHeight='itemHeight' :needCheck='needCheck' @check='check' @moveEnd='moveEnd' />
+    <item :class='item.className' v-for='(item, i) in curList' :key='i' :list='item.list' :content='item.content'  :type='item.type'
+     :listIndex='item.listIndex' :index='item.index' :chooseIndex='chooseList[i]' :needCheck='needCheck' @check='check' @moveEnd='moveEnd'
+     :align='item.align' :showLine='showLine' :flex='item.flex' :className='item.className' :itemHeight='itemHeight' />
    <div class="center"></div>
   </div>
 </template>
@@ -53,6 +53,7 @@ export default {
             listInd++
             return {
               type: 'normal',
+              listIndex: i,
               index: listInd,
               list: item.list.map(info => {
                 if (typeof info !== 'object') {
@@ -73,6 +74,7 @@ export default {
             this.chooseList.push(-1)
             return {
               type: 'division',
+              listIndex: i,
               index: -1,
               list: [],
               content: item.content || '',
@@ -86,8 +88,10 @@ export default {
     }
   },
   methods: {
-    check (v, type, index) {
-      if (typeof this.limitMethods === 'function') {
+    check (v, type, index, listIndex) {
+      // console.log(v)
+      this.$set(this.chooseList, listIndex, v)
+      if (this.needCheck) {
         var checkList = this.chooseList.filter(item => item !== -1)
         checkList[index] = v
         var result = this.limitMethods(checkList, index, type)
@@ -97,16 +101,17 @@ export default {
             if (item !== -1) {
               ind++
               if (item !== result[ind]) {
-                this.$set(this.chooseList, i, result[ind])
-                console.log(this.chooseList, 555)
+                this.$nextTick(() => {
+                  this.$set(this.chooseList, i, result[ind])
+                })
               }
             }
           })
         }
       }
     },
-    moveEnd (v) {
-      console.log(v)
+    moveEnd (v, i) {
+      this.$set(this.chooseList, i, v)
     }
   },
   components: {
