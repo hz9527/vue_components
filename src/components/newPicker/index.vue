@@ -1,20 +1,39 @@
 <template lang="html">
   <div class="picker">
-    <item :class='item.className' v-for='(item, i) in curList' :key='i' :list='item.list' :content='item.content'  :type='item.type'
-     :listIndex='item.listIndex' :index='item.index' :chooseIndex='chooseList[i]' :needCheck='needCheck' @check='check' @moveEnd='moveEnd'
-     :align='item.align' :showLine='showLine' :flex='item.flex' :className='item.className' :itemHeight='itemHeight' />
-    <div class="center" :style="{'height': itemHeight + 'px'}"></div>
+    <slot name='head'>
+      <div class="head">
+        <div class="head-btn" @click='cancel'>取消</div>
+        <div class="head-btn" @click='confirm'>确认</div>
+      </div>
+    </slot>
+    <div class="picker-con">
+      <item :class='item.className' v-for='(item, i) in curList' :key='i' :list='item.list' :content='item.content'  :type='item.type'
+       :listIndex='item.listIndex' :index='item.index' :chooseIndex='chooseList[i]' :needCheck='needCheck' @check='check' @moveEnd='moveEnd'
+       :align='item.align' :showLine='showLine' :flex='item.flex' :className='item.className' :itemHeight='itemHeight' />
+       <slot name='center'>
+         <div class="center" :style="{'height': itemHeight + 'px'}"></div>
+       </slot>
+       <slot name='bg'>
+         <div class="bg"></div>
+       </slot>
+    </div>
   </div>
 </template>
 
 <script>
-import {formateList, getTree, initList, getChildTree} from './picker/utils'
+import {formateList, getTree, initList, getChildTree, getListItem} from './picker/utils'
 // initList arg[formateList, chooseList, tree] return {computedList, curChoose}
 // getChildTree arg[formateList, name, chooseList.slice(), tree] return {curChoose, changeList}
 import Item from './picker/item'
 export default {
   props: {
     list: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    choose: { // [{index: xx}, {dataIndex: xx, index: xx}, 1, -1]
       type: Array,
       default () {
         return []
@@ -38,7 +57,9 @@ export default {
       chooseList: [],
       curList: [],
       _tree: null,
-      _forMatList: null
+      _forMatList: null,
+      _needChange: false,
+      _backupChoose: []
     }
   },
   computed: {
@@ -52,22 +73,68 @@ export default {
       handler (l) {
         this.initData(l)
       }
+    },
+    choose: { // 防止list更新与choose不在一个事件循环中
+      immediate: true,
+      handler (v) {
+        if (v.length !== this.chooseList.length) {
+          this._needChange = true
+        } else {
+          this.updateChoose()
+        }
+      }
     }
   },
   methods: {
+    cancel () {
+      if (this.choose.length === 0) {
+        this.chooseList = this._backupChoose.slice()
+      } else {
+        this.updateChoose()
+      }
+      this.$emit('cancel')
+    },
+    confirm () {
+      var result = this._forMatList.map((item, i) => {
+        if (item.type === 'normal') {
+          return {
+            index: this.chooseList[i],
+            value: item.list[this.chooseList[i]].value,
+            name: item.list[this.chooseList[i]].name
+          }
+        } else if (item.type === 'tree') {
+          return {
+            dataIndex: item.dataIndex,
+            index: this.chooseList[i],
+            value: item.list[this.chooseList[i]].value,
+            name: item.list[this.chooseList[i]].name
+          }
+        } else {
+          return -1
+        }
+      })
+      this.$emit('confirm', result)
+    },
     initData (list) {
       this._forMatList = formateList(list)
       this._tree = getTree(list)
       var result = initList(this._forMatList, this.chooseList, this._tree)
       this.chooseList = result.curChoose
       this.curList = result.computedList
+      if (this.choose.length === 0) {
+        this._backupChoose = result.curChoose.slice()
+      }
+      if (this._needChange) {
+        this._needChange = false
+        this.updateChoose()
+      }
     },
     check (v, type, index, listIndex) {
       this.$set(this.chooseList, listIndex, v)
       if (type === 'tree') {
         var treeResult = getChildTree(this._forMatList, this._forMatList[listIndex].name, this.chooseList.slice(), this._tree)
         treeResult.changeList.forEach(ind => {
-          this.$set(this.curList, ind, this._forMatList[ind])
+          this.$set(this.curList, ind, getListItem(this._forMatList[ind]))
         })
         treeResult.curChoose.forEach((item, i) => {
           if (item !== this.chooseList[i]) {
@@ -98,6 +165,33 @@ export default {
     },
     moveEnd (v, i) {
       this.$set(this.chooseList, i, v)
+    },
+    updateChoose () {
+      if (this.choose.length !== this.chooseList.length) {
+        console.warn('choose is invaild')
+      }
+      this.choose.forEach((item, i) => {
+        var ind = -1
+        if (typeof item === 'object' && 'dataIndex' in item) {
+          // check _forMatList
+          if (this._forMatList[i].dataIndex !== item.dataIndex) {
+            this._forMatList[i].dataIndex = item.dataIndex
+            this._forMatList[i].dataIndex.list = this._forMatList[i].dataIndex.data[item.dataIndex]
+            this.$set(this.curList, i, getListItem(this._forMatList[i]))
+          }
+        } else if (item !== -1 || this.chooseList[i] !== -1) {
+          if (typeof item === 'object') {
+            ind = item.index
+          } else {
+            ind = item
+          }
+        }
+        if (ind !== -1 && this.chooseList[i] !== ind) {
+          this.$nextTick(() => {
+            this.$set(this.chooseList, i, item.index)
+          })
+        }
+      })
     }
   },
   components: {
@@ -107,7 +201,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.picker {
+.head {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  .head-btn {
+    padding: 0 0.15rem;
+  }
+}
+.picker-con {
   display: flex;
   justify-content: space-between;
   position: relative;
@@ -126,10 +229,18 @@ export default {
     width: 200%;
     height: 1px;
     border: 1px solid #ccc;
-    transform: scale(0.5) translate(-50%, 0);
+    transform: scale(0.5) translate(-50%, -50%);
   }
   &:after {
     top: 100%;
   }
+}
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, rgba(200, 200, 200, 0.5) 0%, rgba(200, 200, 200, 0) 40%, rgba(200, 200, 200, 0) 60%, rgba(200, 200, 200, 0.5) 100%)
 }
 </style>

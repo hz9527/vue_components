@@ -24,6 +24,7 @@ function formateList (list) {
       return Object.assign(base, {
         index: ind,
         name: item.name,
+        dataIndex: -1,
         data: item.data.map(subList => {
           return {
             parent: subList.parent,
@@ -92,16 +93,7 @@ function initList (list, chooseList, tree) {
     }
   })
   computedList = list.map(item => {
-    return {
-      type: item.type,
-      flex: item.flex,
-      className: item.className,
-      align: item.align,
-      listIndex: item.listIndex,
-      index: item.index,
-      list: item.list,
-      content: item.content
-    }
+    return getListItem(item)
   })
   return {computedList, curChoose}
 }
@@ -115,6 +107,7 @@ function getTreeList (list, name, chooseList, tree) {
   if (tree[curName].parent === null && typeof curChoose[tree[curName].index] !== 'number') {
     curChoose[tree[curName].index] = list[tree[curName].index].data[0].defaultIndex
     list[tree[curName].index].list = list[tree[curName].index].data[0].list
+    list[tree[curName].index].dataIndex = 0
     changeList.push(tree[curName].index)
   }
   changeList = changeList.concat(getChildTree(list, curName, curChoose, tree, 'init').changeList)
@@ -144,6 +137,7 @@ function getChildTree (list, name, curChoose, tree, type) {
     }
     parentValue = list[tree[curName].index].list[curChoose[tree[curName].index]].value
     curName = tree[curName].child
+    var dataIndex
     list[tree[curName].index].list = list[tree[curName].index].data.find((l, i) => {
       var result
       if (l.parent.constructor !== Array) {
@@ -152,11 +146,13 @@ function getChildTree (list, name, curChoose, tree, type) {
         result = l.parent.findIndex(inf => inf === parentValue) !== -1
       }
       if (result) {
+        dataIndex = i
         changeList.push(tree[curName].index)
         curChoose[tree[curName].index] = l.defaultIndex
       }
       return result
     }).list
+    list[tree[curName].index].dataIndex = dataIndex
   }
   return {curChoose, changeList}
 }
@@ -178,5 +174,16 @@ function getItem (item) {
     }
   }
 }
-
-export {formateList, getTree, initList, getChildTree}
+function getListItem (item) {
+  return {
+    type: item.type,
+    flex: item.flex,
+    className: item.className,
+    align: item.align,
+    listIndex: item.listIndex,
+    index: item.index,
+    list: item.list,
+    content: item.content
+  }
+}
+export {formateList, getTree, initList, getChildTree, getListItem}
