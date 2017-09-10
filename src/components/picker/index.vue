@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import {formateList, getTree, initList, getChildTree, getListItem} from './picker/utils'
+import {formateList, getTree, initList, getChildTree, getListItem, resetList} from './picker/utils'
 // initList arg[formateList, chooseList, tree] return {computedList, curChoose}
 // getChildTree arg[formateList, name, chooseList.slice(), tree] return {curChoose, changeList}
 import Item from './picker/item'
@@ -88,7 +88,17 @@ export default {
   methods: {
     cancel () {
       if (this.choose.length === 0) {
-        this.chooseList = this._backupChoose.slice()
+        var changeList = resetList(this._forMatList, this._tree)
+        if (changeList.length > 0) {
+          changeList.forEach(ind => {
+            this.$set(this.curList, ind, getListItem(this._forMatList[ind]))
+          })
+          this.$nextTick(() => {
+            this.chooseList = this._backupChoose.slice()
+          })
+        } else {
+          this.chooseList = this._backupChoose.slice()
+        }
       } else {
         this.updateChoose()
       }
@@ -96,22 +106,18 @@ export default {
     },
     confirm () {
       var result = this._forMatList.map((item, i) => {
-        if (item.type === 'normal') {
-          return {
+        var result = -1
+        if (item.type !== 'division') {
+          result = {
             index: this.chooseList[i],
             value: item.list[this.chooseList[i]].value,
             name: item.list[this.chooseList[i]].name
           }
-        } else if (item.type === 'tree') {
-          return {
-            dataIndex: item.dataIndex,
-            index: this.chooseList[i],
-            value: item.list[this.chooseList[i]].value,
-            name: item.list[this.chooseList[i]].name
+          if (item.type === 'tree') {
+            result.dataIndex = item.dataIndex
           }
-        } else {
-          return -1
         }
+        return result
       })
       this.$emit('confirm', result)
     },
