@@ -2,14 +2,14 @@
   <div class="content">
     <div class="head">
       <router-link to="/">&lt;  index</router-link>
-      <picker :list='numList' :limitMethods='limitMethods' />
-      <picker :list='childList' />
     </div>
+    <picker :list='numList' :limitMethods='limitMethods' />
+    <picker :list='childList' />
   </div>
 </template>
 
 <script>
-import Picker from '../newPicker/index.vue'
+import Picker from '../../components/picker/index.vue'
 var normalList = [
   {
     flex: 2,

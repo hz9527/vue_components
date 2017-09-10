@@ -1,124 +1,254 @@
-<template>
-<div class="picker-demo">
-  <div class="head">
-    <router-link to="/">&lt;  index</router-link>
+<template lang="html">
+  <div class="content">
+    <div class="head">
+      <router-link to="/">&lt;  index</router-link>
+      <picker :list='numList' :limitMethods='limitMethods' />
+      <picker :list='childList' />
+    </div>
   </div>
-  <pop-picker  :item-list='childList'></pop-picker>
-  <pop-picker :limit-methods='getValue' :item-list='pickerList'></pop-picker>
-</div>
 </template>
 
 <script>
+import Picker from '../picker/index.vue'
 var normalList = [
   {
-    flex: 3,
-    defaultIndex: 0,
-    values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    flex: 2,
+    className: 'year',
+    defaultIndex: 7,
+    list: [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017]
   },
   {
     flex: 1,
-    content: '<span>:</span>'
+    content: '<span>-</span>'
   },
   {
-    flex: 3,
-    values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    flex: 2,
+    defaultIndex: 1,
+    list: [
+      {
+        name: '一月',
+        value: 0
+      },
+      {
+        name: '二月',
+        value: 1
+      },
+      {
+        name: '三月',
+        value: 2
+      },
+      {
+        name: '四月',
+        value: 3
+      },
+      {
+        name: '五月',
+        value: 4
+      },
+      {
+        name: '六月',
+        value: 5
+      },
+      {
+        name: '七月',
+        value: 6
+      },
+      {
+        name: '八月',
+        value: 7
+      },
+      {
+        name: '九月',
+        value: 8
+      },
+      {
+        name: '十月',
+        value: 9
+      },
+      {
+        name: '十一月',
+        value: 10
+      },
+      {
+        name: '十二月',
+        value: 11
+      }
+    ]
+  }
+]
+var numList = [
+  {
+    flex: 2,
+    defaultIndex: 1,
+    list: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+  },
+  {
+    flex: 1,
+    content: '--'
+  },
+  {
+    flex: 2,
+    list: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
   }
 ]
 var childList = [
   {
-    flex: 3,
+    flex: 1,
     name: 'sheng',
-    defaultIndex: 0,
-    values: ['湖北', '北京', '湖南']
+    parentName: null,
+    defaultIndex: 1,
+    data: [
+      {
+        parent: null,
+        list: [
+          {
+            name: '北京',
+            value: '1'
+          },
+          {
+            name: '湖北',
+            value: '2'
+          },
+          {
+            name: '陕西',
+            value: '3'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    className: 'test',
+    flex: 1,
+    content: '-'
   },
   {
     flex: 1,
-    content: 'hhh'
-  },
-  {
-    flex: 3,
+    name: 'shi',
     parentName: 'sheng',
-    name: {
-      '湖北': 'hubei',
-      '北京': 'beijing',
-      '湖南': 'hunan'
-    },
-    defaultIndex: {
-      '湖北': 1,
-      '北京': 0,
-      '湖南': 2
-    },
-    values: {
-      '湖北': ['武汉', '荆州', '黄冈'],
-      '北京': ['朝阳', '海淀', '石景山'],
-      '湖南': ['长沙', '岳阳', '湘潭']
-    }
+    defaultIndex: 0,
+    data: [
+      {
+        defaultIndex: 1,
+        parent: '1',
+        list: [
+          {
+            name: '海淀',
+            value: '1-1'
+          },
+          {
+            name: '朝阳',
+            value: '1-2'
+          },
+          {
+            name: '昌平',
+            value: '1-3'
+          },
+          {
+            name: '西城',
+            value: '1-4'
+          }
+        ]
+      },
+      {
+        parent: '2',
+        list: [
+          {
+            name: '武汉',
+            value: '2-1'
+          },
+          {
+            name: '荆州',
+            value: '2-2'
+          },
+          {
+            name: '黄冈',
+            value: '2-3'
+          },
+          {
+            name: '黄石',
+            value: '2-4'
+          }
+        ]
+      },
+      {
+        defaultIndex: 1,
+        parent: '3',
+        list: ['西安', '安康', '汉中', '宝鸡']
+      }
+    ]
   },
   {
-    flex: 3,
-    parentName: 'hubei',
-    defaultIndex: {
-      '武汉': 1,
-      '荆州': 1,
-      '黄冈': 2
-    },
-    values: {
-      '武汉': ['新洲', '黄陂', '东西湖'],
-      '荆州': ['新洲1', '黄陂1', '东西湖1'],
-      '黄冈': ['新洲2', '黄陂2', '东西湖2']
-    }
+    className: 'test',
+    flex: 1,
+    content: '-'
   },
   {
-    flex: 3,
-    parentName: 'beijing',
-    defaultIndex: {
-      '朝阳': 1,
-      '海淀': 0,
-      '石景山': 2
-    },
-    values: {
-      '朝阳': ['大屯', '亚运村', '来广营'],
-      '海淀': ['苏州街', '海淀黄庄', '北土城'],
-      '石景山': ['aa1', 'aa2', 'aa3']
-    }
-  },
-  {
-    flex: 3,
-    parentName: 'hunan',
-    defaultIndex: {
-      '长沙': 1,
-      '岳阳': 0,
-      '湘潭': 2
-    },
-    values: {
-      '长沙': ['岳麓', '金鹰', 'xx'],
-      '岳阳': ['xx1', 'xx2', 'xx3'],
-      '湘潭': ['yy1', 'yy2', 'yy3']
-    }
+    flex: 1,
+    name: '',
+    parentName: 'shi',
+    data: [
+      {
+        parent: ['1-1', '1-2', '1-3', '1-4'],
+        list: []
+      },
+      {
+        parent: '2-1',
+        list: ['武昌', '洪山', '汉阳', '新洲', '江岸', '硚口']
+      },
+      {
+        parent: '2-2',
+        list: ['荆州1区', '荆州2区', '荆州3区', '荆州4区']
+      },
+      {
+        parent: '2-3',
+        list: ['黄冈1区', '黄冈2区', '黄冈3区', '黄冈4区']
+      },
+      {
+        parent: '2-4',
+        list: ['黄石1区', '黄石2区', '黄石3区', '黄石4区']
+      },
+      {
+        parent: '西安',
+        list: ['西安1区', '西安2区', '西安3区', '西安4区']
+      },
+      {
+        parent: '安康',
+        list: ['安康1区', '安康2区', '安康3区', '安康4区']
+      },
+      {
+        parent: '汉中',
+        list: ['汉中1区', '汉中2区', '汉中3区', '汉中4区']
+      },
+      {
+        parent: '宝鸡',
+        list: ['宝鸡1区', '宝鸡2区', '宝鸡3区']
+      }
+    ]
   }
 ]
-import PopPicker from '../picker/index'
+function limitMethods (list, index, type) {
+  if (list[0] < list[1]) {
+    return [list[0], list[0]]
+  }
+  return false
+}
 export default {
-  components: {
-    PopPicker
-  },
   data () {
     return {
-      pickerList: normalList,
+      normalList: normalList,
+      numList: numList,
       childList: childList,
-      getValue (arr, ind) {
-        if (arr[0] > arr[1]) {
-          return [arr[0], arr[0]]
-        } else {
-          return arr
-        }
-      }
+      limitMethods: limitMethods
     }
+  },
+  components: {
+    Picker
   }
 }
 </script>
 
-<style scoped lang='scss'>
+<style lang="scss" scoped>
 .head{
   height: 0.3rem;
   line-height: 0.3rem;
