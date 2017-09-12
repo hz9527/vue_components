@@ -53,7 +53,7 @@ export default {
             return
           }
           this.$nextTick(() => {
-            this._alloyTouch.to(this.emptyHeight - v * this.itemHeight, 100)
+            this._alloyTouch.to(this.emptyHeight - v * this.itemHeight, 50)
           })
         }
       }

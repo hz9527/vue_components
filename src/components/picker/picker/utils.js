@@ -47,6 +47,7 @@ function getTree (list) {
       if (!tree[item.name]) {
         tree[item.name] = {
           index: i,
+          defaultDataIndex: -1,
           parent: item.parentName,
           name: item.name || i,
           child: -1
@@ -54,6 +55,7 @@ function getTree (list) {
       } else {
         tree[item.name] = {
           index: i,
+          defaultDataIndex: -1,
           parent: item.parentName,
           name: item.name || i,
           child: tree[item.name].child
@@ -65,6 +67,7 @@ function getTree (list) {
         } else {
           tree[item.parentName] = {
             index: -1,
+            defaultDataIndex: -1,
             parent: -1,
             name: item.parentName,
             child: item.name
@@ -108,6 +111,7 @@ function getTreeList (list, name, chooseList, tree) {
     curChoose[tree[curName].index] = list[tree[curName].index].data[0].defaultIndex
     list[tree[curName].index].list = list[tree[curName].index].data[0].list
     list[tree[curName].index].dataIndex = 0
+    tree[curName].defaultDataIndex = 0
     changeList.push(tree[curName].index)
   }
   changeList = changeList.concat(getChildTree(list, curName, curChoose, tree, 'init').changeList)
@@ -153,6 +157,9 @@ function getChildTree (list, name, curChoose, tree, type) {
       return result
     }).list
     list[tree[curName].index].dataIndex = dataIndex
+    if (type === 'init') {
+      tree[curName].defaultDataIndex = dataIndex
+    }
   }
   return {curChoose, changeList}
 }
@@ -186,4 +193,15 @@ function getListItem (item) {
     content: item.content
   }
 }
-export {formateList, getTree, initList, getChildTree, getListItem}
+function resetList (list, tree) {
+  var changeList = []
+  Object.keys(tree).forEach(key => {
+    if (tree[key].defaultDataIndex !== list[tree[key].index].dataIndex) {
+      changeList.push(tree[key].index)
+      list[tree[key].index].dataIndex = tree[key].index
+      list[tree[key].index].list = list[tree[key].index].data[tree[key].defaultDataIndex].list
+    }
+  })
+  return changeList
+}
+export {formateList, getTree, initList, getChildTree, getListItem, resetList}
