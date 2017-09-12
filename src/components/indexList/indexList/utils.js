@@ -1,6 +1,7 @@
-function getCurData (keyConf, curList, Division) {
+function getCurData (keyConf, curList) {
   // keyConf {id: xx, name: xx, pinyin: xx}
-  var index = [], list = {}
+  var index = []
+  var list = {}
   curList.forEach((item, i) => {
     var key = item[keyConf.pinyin][0].toUpperCase()
     var itemKey
@@ -19,19 +20,21 @@ function getCurData (keyConf, curList, Division) {
       list[key] = [_item]
     }
   })
-  sortList(index, '')
-  sortList(list, keyConf.pinyin)
+  sortList(index, '', keyConf.division)
+  Object.keys(list).forEach(key => {
+    sortList(list[key], keyConf.pinyin, keyConf.division)
+  })
   return {index, list}
 }
 
 function sortList (list, key, Division = '') {
-  list.sort(pre, next) {
+  list.sort((pre, next) => {
     if (key) {
       return compare(pre[key], next[key], Division)
     } else {
       return compare(pre, next, Division)
     }
-  }
+  })
 }
 
 function compare (pre, next, Division, ind) {
@@ -41,12 +44,16 @@ function compare (pre, next, Division, ind) {
   }
   var c = pre.charCodeAt(ind) - next.charCodeAt(ind)
   if (c !== 0) { // 下标不同
-    if (!!Division && (pre[ind] === Division || next[i] === Division)) { // 有一个拼音结尾了
-      return pre[i] === Division ? -1 : 1
+    if (Division) { // 判断有一个拼音结尾了
+      if (typeof Division === 'string' && (pre[ind] === Division || next[ind] === Division)) {
+        return pre[ind] === Division ? -1 : 1
+      } else if (typeof Division === 'function') {
+        return Division(pre[ind], next[ind])
+      }
     }
     return c
   } else { // 下标相同继续比下一位
-    return compare(pre, next, Division, ++i)
+    return compare(pre, next, Division, ++ind)
   }
 }
 export {getCurData}
