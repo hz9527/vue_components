@@ -100,7 +100,9 @@ export default {
   },
   mounted () {
     var rect = this.$refs.page.parentNode.getBoundingClientRect()
-    if (rect.height === rect.bottom - rect.top) {
+    if (this.$refs.page.offsetTop !== 0) {
+      this.height = window.innerHeight - rect.top - this.$refs.page.offsetTop + 'px'
+    } else if (rect.height === rect.bottom - rect.top) {
       this.height = window.innerHeight - rect.top + 'px'
     }
   }
