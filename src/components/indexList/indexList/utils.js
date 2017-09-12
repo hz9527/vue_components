@@ -56,4 +56,41 @@ function compare (pre, next, Division, ind) {
     return compare(pre, next, Division, ++ind)
   }
 }
-export {getCurData}
+
+function navLocation (eleId, parId) {
+  let nav = document.querySelector(eleId)
+  if (isSupportSticky()) {
+    // nav.classList.add('sticky')
+    document.querySelector(parId).classList.add('sticky')
+  } else {
+    let navOffsetY = nav.offsetTop
+    let onScroll = function () {
+      if (window.scrollY >= navOffsetY) {
+        nav.classList.add('fixed')
+      } else {
+        nav.classList.remove('fixed')
+      }
+    }
+    window.addEventListener('scroll', onScroll)
+  }
+}
+var isSupportSticky = (function () {
+  var isSupport
+  window.addEventListener('load', () => {
+    let prefixTestList = ['', '-webkit-', '-ms-', '-moz-', '-o-']
+    let stickyText = ''
+    prefixTestList.forEach(item => {
+      stickyText += `position:${item}sticky;`
+    })
+    let div = document.createElement('div')
+    div.style.cssText = ' display:none; ' + stickyText
+    document.body.appendChild(div)
+    isSupport = /sticky/i.test(window.getComputedStyle(div).position)
+    document.body.removeChild(div)
+    div = null
+  })
+  return function () {
+    return isSupport
+  }
+})()
+export {getCurData, navLocation}
