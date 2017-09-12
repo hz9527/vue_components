@@ -13,7 +13,7 @@
       <slot name='foot'></slot>
     </div>
     <div class="index-con" @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' @touchcancel='moveEnd' @click='clickIndex'>
-      <span :data-index='i' v-for='(item, i) in curData.index' :key='item'>{{item}}</span>
+      <span :data-index='i' v-for='(item, i) in curData.index' :key='item' :style="{'height': itemHeight + 'px'}">{{item}}</span>
     </div>
     <div class="index-toast" v-show='indToastShow'>{{chooseIndex}}</div>
   </div>
@@ -34,6 +34,10 @@ export default {
       default () {
         return []
       }
+    },
+    maxHeight: {
+      type: Number,
+      default: 20
     }
   },
   data () {
