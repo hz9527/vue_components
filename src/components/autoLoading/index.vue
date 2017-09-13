@@ -59,7 +59,7 @@ export default {
       this.checkBottom()
     },
     moveEnd (e) {
-      console.log(this.$refs.con.scrollTop, this.$refs.con.offsetHeight)
+      // console.log(this.$refs.con.scrollTop, this.$refs.con.offsetHeight)
     },
     autoMove (v) {
       if (!this._maxHeight) {
