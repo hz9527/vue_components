@@ -3,8 +3,10 @@
     <div class="head">
       <slot name='head'></slot>
     </div>
-    <div class="content">
-      <slot name='list'></slot>
+    <div class="content" ref='con'>
+      <div class="list-con" ref='list' @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' @touchcancel='moveEnd'>
+        <slot name='list'></slot>
+      </div>
     </div>
     <div class="foot">
       <slot name='foot'></slot>
@@ -14,9 +16,40 @@
 
 <script>
 export default {
+  props: {
+    loadType: { // top bottom all
+      type: String,
+      default: 'all'
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    canLoad: {
+      type: Boolean,
+      default: true
+    }
+  },
   data () {
     return {
-      height: '100%'
+      height: '100%',
+      _bottom: 0
+    }
+  },
+  methods: {
+    moveStart (e) {
+      this._bottom = this.$refs.con.getBoundingClientRect().bottom
+      console.log(this.$refs.list.getBoundingClientRect(), this.$refs.con.getBoundingClientRect())
+    },
+    move (e) {
+      this.checkBottom()
+    },
+    moveEnd (e) {
+
+    },
+    autoMove (v) {},
+    checkBottom () {
+      console.log(this.$refs.list.getBoundingClientRect().bottom - 10 <= this._bottom)
     }
   },
   mounted () {
@@ -44,7 +77,7 @@ export default {
 .content {
   flex: 1;
   overflow: auto;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: auto;
   &::-webkit-scrollbar {
     display: none;
   }
