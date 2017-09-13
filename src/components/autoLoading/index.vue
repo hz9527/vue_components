@@ -28,28 +28,49 @@ export default {
     canLoad: {
       type: Boolean,
       default: true
+    },
+    preLoadHeight: {
+      type: Number,
+      default: 50
     }
   },
   data () {
     return {
       height: '100%',
-      _bottom: 0
+      _bottom: 0,
+      _maxHeight: 0
+    }
+  },
+  watch: {
+    loading (v) {
+      if (!v && this.$el) { // 更新bottom maxHeight
+        this.$nextTick(() => {
+          this._bottom = this.$refs.con.getBoundingClientRect().bottom
+          this._maxHeight = this.$refs.list.scrollHeight
+        })
+      }
     }
   },
   methods: {
     moveStart (e) {
-      this._bottom = this.$refs.con.getBoundingClientRect().bottom
-      console.log(this.$refs.list.getBoundingClientRect(), this.$refs.con.getBoundingClientRect())
+      console.log(this.$refs.list.scrollHeight)
     },
     move (e) {
       this.checkBottom()
     },
     moveEnd (e) {
-
+      console.log(this.$refs.con.scrollTop, this.$refs.con.offsetHeight)
     },
-    autoMove (v) {},
+    autoMove (v) {
+      if (!this._maxHeight) {
+        this._maxHeight = this.$refs.list.scrollHeight
+      }
+    },
     checkBottom () {
-      console.log(this.$refs.list.getBoundingClientRect().bottom - 10 <= this._bottom)
+      if (!this._bottom) {
+        this._bottom = this.$refs.con.getBoundingClientRect().bottom
+      }
+      console.log(this.$refs.list.getBoundingClientRect().bottom - this.preLoadHeight <= this._bottom)
     }
   },
   mounted () {
