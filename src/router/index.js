@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Index from '@/examples/index'
 import Picker from '@/examples/picker/index'
 import IndexList from '@/examples/indexList/index'
+import AutoLoading from '@/examples/autoLoading/index'
 // import DatePicker from '@/components/pages/datePicker'
 // import Dictionary from '@/components/pages/dictionary'
 // import Swiper from '@/components/pages/swiper'
@@ -24,6 +25,11 @@ var routes = [
     path: '/index_list',
     name: 'indexList',
     component: IndexList
+  },
+  {
+    path: '/auto_loading',
+    name: 'autoLoading',
+    component: AutoLoading
   },
   // {
   //   path: '/datePicker',

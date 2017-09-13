@@ -13,7 +13,7 @@
       <slot name='foot'></slot>
     </div>
     <div class="index-con" @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' @touchcancel='moveEnd' @click='clickIndex'>
-      <span :data-index='i' v-for='(item, i) in curData.index' :key='item'>{{item}}</span>
+      <span :data-index='i' v-for='(item, i) in curData.index' :style="{'height': itemHeight + 'px', 'lineHeight': itemHeight + 'px'}" :key='item'>{{item}}</span>
     </div>
     <div class="index-toast" v-show='indToastShow'>{{chooseIndex}}</div>
   </div>
@@ -34,6 +34,10 @@ export default {
       default () {
         return []
       }
+    },
+    maxHeight: {
+      type: Number,
+      default: 20
     }
   },
   data () {
@@ -41,6 +45,7 @@ export default {
       height: '100%',
       chooseIndex: '',
       indToastShow: false,
+      itemHeight: 0,
       _startY: null,
       _startI: 0
     }
@@ -64,6 +69,9 @@ export default {
           this.indToastShow = false
         }, 400)
       }
+    },
+    curData () {
+      this.getItemHeight()
     }
   },
   methods: {
@@ -81,7 +89,7 @@ export default {
     move (e) {
       if (this._startY !== null) {
         var move = e.touches[0].screenY - this._startY
-        this.choose(this._startI + parseInt(move / 20))
+        this.choose(this._startI + parseInt(move / this.itemHeight))
       }
     },
     moveEnd () {
@@ -96,13 +104,21 @@ export default {
         this.chooseIndex = this.curData.index[i]
         this.$refs.con.scrollTop = this.$refs[this.curData.index[i]][0].offsetTop
       }
+    },
+    getItemHeight () {
+      if (this.$el) {
+        this.itemHeight = Math.min(parseInt(parseInt(window.getComputedStyle(this.$refs.page).height) / this.curData.index.length), this.maxHeight)
+      }
     }
   },
   mounted () {
     var rect = this.$refs.page.parentNode.getBoundingClientRect()
-    if (rect.height === rect.bottom - rect.top) {
+    if (this.$refs.page.offsetTop !== 0) {
+      this.height = window.innerHeight - rect.top - this.$refs.page.offsetTop + 'px'
+    } else if (rect.height === rect.bottom - rect.top) {
       this.height = window.innerHeight - rect.top + 'px'
     }
+    this.$nextTick(this.getItemHeight)
   }
 }
 </script>
@@ -117,8 +133,6 @@ export default {
 .head, .foot {
   flex-grow: 0;
   flex-shrink: 0;
-  // background: #f55;
-  // height: 0.1rem;
 }
 .content {
   flex: 1;
