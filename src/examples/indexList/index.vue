@@ -1,6 +1,6 @@
 <template lang="html">
   <div class="page">
-    <div class="head">
+    <div class="hz-head">
       <router-link to="/">&lt;  index</router-link>
     </div>
     <index-list :list='cityList' />
@@ -23,17 +23,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.head{
-  height: 0.3rem;
-  line-height: 0.3rem;
-  border: 1px solid #f55;
-  a{
-    display: block;
-    height:100%;
-    color: #e55;
-    text-decoration: none;
-    padding-left: 0.1rem;
-    text-align: left;
-  }
-}
+@import '../common_style/common.scss';
 </style>
