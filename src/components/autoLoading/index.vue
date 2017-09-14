@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import {rebound} from './autoLoading/utils'
+// import {rebound} from './autoLoading/utils'
 export default {
   props: {
     loadType: { // top bottom all
@@ -42,6 +42,9 @@ export default {
       translate: 0,
       _maxScroll: 0,
       _touchTop: null,
+      _preMove: 0,
+      _preTop: 0,
+      _preTime: 0,
       _loadType: '' // top bottom
     }
   },
@@ -64,24 +67,39 @@ export default {
   },
   methods: {
     moveStart (e) {
-      // console.log(this.$refs.list.scrollHeight)
+      this._preTime = e.timeStamp
+      this._preTop = this.$refs.con.scrollTop
     },
     move (e) {
       if (this.$refs.con.scrollTop === 0) {
-        if (!this._touchTop) {
-          this._touchTop = e.touches[0].clientY
-        } else {
-          this.translate = rebound(e.touches[0].clientY - this._touchTop)
-        }
-        e.preventDefault()
+        // e.preventDefault()
+        // if (!this._touchTop) {
+        //   this._touchTop = e.touches[0].clientY
+        //   this._preMove = 0
+        // } else if (this.translate >= 0) {
+        //   var move = e.touches[0].clientY - this._touchTop
+        //   this.translate = this._preMove < move ? rebound(move) : this.translate - this._preMove + move
+        //   this._preMove = move
+        // } else {
+        //   this._touchTop = 0
+        //   this.$refs.con.scrollTop = -this.translate
+        //   this.translate = 0
+        // }
       } else {
         this.checkBottom()
       }
+      var s = this.$refs.con.scrollTop - this._preTop
+      var t = e.timeStamp - this._preTime
+      this._preTime = e.timeStamp
+      this._preTop = this.$refs.con.scrollTop
+      console.log(s / t)
     },
     moveEnd (e) {
       this._touchTop = null
+      if (this.translate < 0) {
+        this.$refs.con.scrollTop = -this.translate
+      }
       this.translate = 0
-      // console.log(this.$refs.con.scrollTop, this.$refs.con.offsetHeight)
     },
     autoMove (v) {
       if (!this._maxScroll) {
@@ -120,7 +138,7 @@ export default {
 .content {
   flex: 1;
   overflow: auto;
-  -webkit-overflow-scrolling: auto;
+  -webkit-overflow-scrolling: touch;
   &::-webkit-scrollbar {
     display: none;
   }
