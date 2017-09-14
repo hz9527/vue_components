@@ -4,7 +4,8 @@
       <slot name='head'></slot>
     </div>
     <div class="content" ref='con'>
-      <div class="list-con" ref='list' @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' @touchcancel='moveEnd'>
+      <div class="list-con" ref='list' :style='translateStyle'
+        @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' @touchcancel='moveEnd'>
         <slot name='list'></slot>
       </div>
     </div>
@@ -15,6 +16,7 @@
 </template>
 
 <script>
+import {rebound} from './autoLoading/utils'
 export default {
   props: {
     loadType: { // top bottom all
@@ -37,40 +39,60 @@ export default {
   data () {
     return {
       height: '100%',
-      _bottom: 0,
-      _maxHeight: 0
+      translate: 0,
+      _maxScroll: 0,
+      _touchTop: null,
+      _loadType: '' // top bottom
     }
   },
   watch: {
     loading (v) {
-      if (!v && this.$el) { // 更新bottom maxHeight
+      if (!v && this.$el) { // 更新bottom _maxScroll
         this.$nextTick(() => {
-          this._bottom = this.$refs.con.getBoundingClientRect().bottom
-          this._maxHeight = this.$refs.list.scrollHeight
+          this._maxScroll = this.$refs.list.scrollHeight - this.$refs.con.offsetHeight
         })
+      }
+    }
+  },
+  computed: {
+    translateStyle () {
+      return {
+        webkitTransform: `translate(0px, ${this.translate}px)`,
+        transform: `translate(0px, ${this.translate}px)`
       }
     }
   },
   methods: {
     moveStart (e) {
-      console.log(this.$refs.list.scrollHeight)
+      // console.log(this.$refs.list.scrollHeight)
     },
     move (e) {
-      this.checkBottom()
+      if (this.$refs.con.scrollTop === 0) {
+        if (!this._touchTop) {
+          this._touchTop = e.touches[0].clientY
+        } else {
+          this.translate = rebound(e.touches[0].clientY - this._touchTop)
+        }
+        e.preventDefault()
+      } else {
+        this.checkBottom()
+      }
     },
     moveEnd (e) {
+      this._touchTop = null
+      this.translate = 0
       // console.log(this.$refs.con.scrollTop, this.$refs.con.offsetHeight)
     },
     autoMove (v) {
-      if (!this._maxHeight) {
-        this._maxHeight = this.$refs.list.scrollHeight
+      if (!this._maxScroll) {
+        this._maxScroll = this.$refs.list.scrollHeight - this.$refs.con.offsetHeight
       }
     },
     checkBottom () {
-      if (!this._bottom) {
-        this._bottom = this.$refs.con.getBoundingClientRect().bottom
+      if (!this._maxScroll) {
+        this._maxScroll = this.$refs.list.scrollHeight - this.$refs.con.offsetHeight
       }
-      console.log(this.$refs.list.getBoundingClientRect().bottom - this.preLoadHeight <= this._bottom)
+      return this.$refs.con.scrollTop - this._maxScroll
     }
   },
   mounted () {
