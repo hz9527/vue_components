@@ -16,11 +16,12 @@
           </slot>
         </div>
         <slot name='list'></slot>
-        <div class="no-more" v-show='!canLoad'>
+        <div class="no-more-con" v-show='!canLoad'>
           <slot name='noMore'>
-            <span>我也是有底线的</span>
+            <span class="no-more">我也是有底线的</span>
           </slot>
         </div>
+        <slot name='list-foot'></slot>
       </div>
       <div class="preload-con" v-show='loadingState === 2'>
         <slot name='preload'>
@@ -168,8 +169,6 @@ export default {
 .head, .foot {
   flex-grow: 0;
   flex-shrink: 0;
-  height: 0.1rem;
-  background: #f55;
 }
 .content {
   flex: 1;
@@ -209,12 +208,17 @@ export default {
   .preload {
     width: 0.3rem;
     height: 0.3rem;
-    background: #f55;
+    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAEgklEQVR4Xu1aXVLbMBDWmoFX0hNAT0A4AXCCwgkaZpCGt8IJgBMAb4zETMMJSE9AOAHpCZobFF7j4O0sI2WEY1uOHFHHxI+JVt799Gn/vMA++QOf3H62BGDJgJog0Ol0Wmtra98YY5uMseFoNPrV7XafQ6sX9AqQUaurq5cAsIuIZExXKXWdNopz3gaAe228+XuIiAdKqUFIEIIBoE/0KWUU2XIhpTy3jeKcPwFAO20oIg6UUtsLCYAQ4oQxdpmlvJRyAvzx8fFmkiR/8oyMoujrzc3NMBQIwRgghKBTPstSPEmSvdvb2z79d3R0tBtF0UOegYi4bV8DvX4HEclXDOI4vqviK4IBwDnvAMBPFwPofyEE+Yf1jLUvUsqW+T0H1Eq+whsA7bjOELEFAP3RaHSdPgkhBDmwrZRhWT4gD6wDKWXPxZQqvsILAG08ObjJg4h9pdSe/ZuOAuepKNDNYgVRGwDo2ryFQUQ8N9dEs4Tkvpe9KmV9hhcAQohMZey7XVaBsus4530A2Mlb7/tuLwDylPFVogwIeaAbWd9o4QVAToh7iaKoHSpkZV07YzwiPiqldssAmV7jBQBtwjnvAQClrvS8IOKJUirzfvsoliWjI8uVHTHI+DiO931DoTcAGoQ2RYHxeDzwVWBWcChxen19JYdJCVTfOEqdeVLesU+OlCJDXuptv7MSALMqH2p9QdrNEJHqj8O8dzcCAJeDZIxN8omZfICm2z0VKrqaOw19z31Ywjn/CwCTjDG9ByJeK6WoNpl6ChnAOX+gJMaW8g03PoaVlRFCYNHaoihRCEDWxoh4WDcWcM6HALBRAMJU+m3WuhgwtXG6Oit7SiHXFVWe9N4inV0MoJBCsd1UandSyk5IY3z3zstOXYx1RgFyhOPxeBMAnkO3p3yNN3KUKOk8gCpUKqiuXDo7AaiqVN3lGwmADt9vWaEOj9RS62b1LBoHABVNjDEK31N5AaXHcRzv2Wl74wAQQlCDlZoqec+7kJgLgEZyPY7j3x9V6FT1F64Gqw6J5My/FOYBnPMrAPhhBFZWVrZD1flVjbblXfmAWWu35TMZkJEB5mZS8zSg6l5FnWh775kBKComqio9T3nXRxbN6Hfdo0wG2FeAuj0hW13zBID2Suk+tX26b+lygu04jnuL4gStjHDiwywEMtt2jQuDxmB9HaiWaSHiMO8gGwtA2au1BKAsUk1dt2SA62SFEORItpIkebQ/VrrkFuX/Mh0hmt15e0J++/tfgLkASE95LERKPAuYhQCkq6s6tsRnMTZrrdMJahBozK3n6q9VVWYe8rob1CqrqxOAeShV5z2WANT5dD5CtyUDfFE2Y3J6sPli0UpmY7c3A1IjMqdSShpdWbhnIQGgiZB5Mc4bAN1woExxmJ7+Dk0D+hCq538qD2V5AxDayKL9a8GAsgDozGxDKfVYVuYj1wVngDW/4yykdOnNzID0RwARHABrFN4ZKcwHGfvDRWgQggNgBizKNFMayYDQJ1h1/+AMqKpgaPklAKERrvv+SwbU/YRC6/cPzjNkXxNIUokAAAAASUVORK5CYII=') center no-repeat;
+    background-size: contain;
     animation: preload 1s linear infinite;
   }
 }
-.no-more {
+.no-more-con {
   text-align: center;
+  .no-more {
+    line-height: 0.3rem;
+    color: #999;
+  }
 }
 @keyframes loading {
   0% {
