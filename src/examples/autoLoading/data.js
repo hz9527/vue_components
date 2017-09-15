@@ -1,4 +1,4 @@
-function getData (length, pageSize = 10) {
+function getData (length, pageSize = 20) {
   var time = parseInt(Math.random() * 100) + 20
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -13,7 +13,7 @@ function getData (length, pageSize = 10) {
   })
 }
 
-function refreshList (pageSize = 10) {
+function refreshList (pageSize = 20) {
   var time = parseInt(Math.random() * 100) + 20
   return new Promise((resolve, reject) => {
     setTimeout(() => {

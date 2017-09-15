@@ -4,7 +4,8 @@
       <slot name='head'></slot>
     </div>
     <div class="content" ref='con'>
-      <div class="list-con" ref='list' @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' @touchcancel='moveEnd'>
+      <div class="list-con" ref='list' :style='translateStyle'
+        @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' @touchcancel='moveEnd'>
         <slot name='list'></slot>
       </div>
     </div>
@@ -15,6 +16,7 @@
 </template>
 
 <script>
+// import {rebound} from './autoLoading/utils'
 export default {
   props: {
     loadType: { // top bottom all
@@ -28,28 +30,87 @@ export default {
     canLoad: {
       type: Boolean,
       default: true
+    },
+    preLoadHeight: {
+      type: Number,
+      default: 50
     }
   },
   data () {
     return {
       height: '100%',
-      _bottom: 0
+      translate: 0,
+      _maxScroll: 0,
+      _touchTop: null,
+      _preMove: 0,
+      _preTop: 0,
+      _preTime: 0,
+      _loadType: '' // top bottom
+    }
+  },
+  watch: {
+    loading (v) {
+      if (!v && this.$el) { // 更新bottom _maxScroll
+        this.$nextTick(() => {
+          this._maxScroll = this.$refs.list.scrollHeight - this.$refs.con.offsetHeight
+        })
+      }
+    }
+  },
+  computed: {
+    translateStyle () {
+      return {
+        webkitTransform: `translate(0px, ${this.translate}px)`,
+        transform: `translate(0px, ${this.translate}px)`
+      }
     }
   },
   methods: {
     moveStart (e) {
-      this._bottom = this.$refs.con.getBoundingClientRect().bottom
-      console.log(this.$refs.list.getBoundingClientRect(), this.$refs.con.getBoundingClientRect())
+      this._preTime = e.timeStamp
+      this._preTop = this.$refs.con.scrollTop
     },
     move (e) {
-      this.checkBottom()
+      if (this.$refs.con.scrollTop === 0) {
+        // e.preventDefault()
+        // if (!this._touchTop) {
+        //   this._touchTop = e.touches[0].clientY
+        //   this._preMove = 0
+        // } else if (this.translate >= 0) {
+        //   var move = e.touches[0].clientY - this._touchTop
+        //   this.translate = this._preMove < move ? rebound(move) : this.translate - this._preMove + move
+        //   this._preMove = move
+        // } else {
+        //   this._touchTop = 0
+        //   this.$refs.con.scrollTop = -this.translate
+        //   this.translate = 0
+        // }
+      } else {
+        this.checkBottom()
+      }
+      var s = this.$refs.con.scrollTop - this._preTop
+      var t = e.timeStamp - this._preTime
+      this._preTime = e.timeStamp
+      this._preTop = this.$refs.con.scrollTop
+      console.log(s / t)
     },
     moveEnd (e) {
-
+      this._touchTop = null
+      if (this.translate < 0) {
+        this.$refs.con.scrollTop = -this.translate
+      }
+      this.translate = 0
     },
-    autoMove (v) {},
+    autoMove (v) {
+      if (!this._maxScroll) {
+        this._maxScroll = this.$refs.list.scrollHeight - this.$refs.con.offsetHeight
+      }
+    },
     checkBottom () {
-      console.log(this.$refs.list.getBoundingClientRect().bottom - 10 <= this._bottom)
+      if (!this._maxScroll) {
+        this._maxScroll = this.$refs.list.scrollHeight - this.$refs.con.offsetHeight
+      }
+      return this.$refs.con.scrollTop - this._maxScroll
     }
   },
   mounted () {
@@ -77,7 +138,7 @@ export default {
 .content {
   flex: 1;
   overflow: auto;
-  -webkit-overflow-scrolling: auto;
+  -webkit-overflow-scrolling: touch;
   &::-webkit-scrollbar {
     display: none;
   }

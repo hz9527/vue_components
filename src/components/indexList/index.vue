@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import {getCurData} from './indexList/utils'
+import {getCurData} from './src/utils'
 export default {
   props: {
     keyConf: {
@@ -63,7 +63,7 @@ export default {
   },
   watch: {
     indToastShow (v) {
-      if (v) {
+      if (v && !this._startY) {
         setTimeout(() => {
           this.chooseIndex = ''
           this.indToastShow = false
@@ -96,6 +96,10 @@ export default {
       if (this._startY !== null) {
         this._startY = null
         this._startI = 0
+        setTimeout(() => {
+          this.chooseIndex = ''
+          this.indToastShow = false
+        }, 200)
       }
     },
     choose (i) {
