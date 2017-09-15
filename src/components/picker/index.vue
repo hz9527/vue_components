@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import {formateList, getTree, initList, getChildTree, getListItem, resetList} from './picker/utils'
+import {formateList, getTree, initList, getChildTree, getListItem, resetList} from './src/utils'
 // initList arg[formateList, chooseList, tree] return {computedList, curChoose}
 // getChildTree arg[formateList, name, chooseList.slice(), tree] return {curChoose, changeList}
-import Item from './picker/item'
+import Item from './src/item'
 export default {
   props: {
     list: {

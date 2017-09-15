@@ -32,7 +32,11 @@ module.exports = {
         loader: 'eslint-loader',
         enforce: 'pre',
         include: [resolve('src'), resolve('test')],
-        exclude: [resolve('src/components/dictionary/dictionary/pinyin.js'), resolve('src/components/picker/picker/touch.js')],
+        exclude: [
+          resolve('src/components/dictionary/dictionary/pinyin.js'),
+          resolve('src/components/picker/src/touch.js'),
+          resolve('src/components/autoLoading2/src/touch.js')
+        ],
         options: {
           formatter: require('eslint-friendly-formatter')
         }

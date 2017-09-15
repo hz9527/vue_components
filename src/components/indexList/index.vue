@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import {getCurData} from './indexList/utils'
+import {getCurData} from './src/utils'
 export default {
   props: {
     keyConf: {
