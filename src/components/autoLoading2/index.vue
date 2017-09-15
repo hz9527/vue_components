@@ -63,7 +63,7 @@ export default {
     },
     preLoadHeight: {
       type: Number,
-      default: 100
+      default: 150
     }
   },
   data () {
@@ -124,7 +124,7 @@ export default {
         target: this.$refs.list,
         touch: this.$refs.con,
         property: 'translateY',
-        maxSpeed: 2,
+        maxSpeed: 1,
         max: 0,
         min: this.getMin(),
         touchMove: this.move,
