@@ -23,7 +23,7 @@
         </div>
         <slot name='list-foot'></slot>
       </div>
-      <div class="preload-con" v-show='loadingState === 2'>
+      <div class="preload-con" v-show='canLoad && loadingState === 2'>
         <slot name='preload'>
           <div class="preload"></div>
         </slot>
@@ -124,7 +124,8 @@ export default {
         target: this.$refs.list,
         touch: this.$refs.con,
         property: 'translateY',
-        maxSpeed: 1,
+        // maxSpeed: 3,
+        sensitivity: 0.8,
         max: 0,
         min: this.getMin(),
         touchMove: this.move,
