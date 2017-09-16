@@ -398,6 +398,8 @@ AlloyTouch = (function () {
         this.outFactor = this._getValue(option.outFactor, 0.3)
         this.min = option.min
         this.max = option.max
+        this.reboundTime = this._getValue(option.reboundTime, 100)
+        this.scrollTime = this._getValue(option.scrollTime, 300)
         this.deceleration = 0.0006
         this.maxRegion = this._getValue(option.maxRegion, 600)
         this.springMaxRegion = this._getValue(option.springMaxRegion, 60)
@@ -550,12 +552,12 @@ AlloyTouch = (function () {
                 }
                 if (this.touchEnd.call(this, evt, current, this.currentPage) === false) return
                 if (this.hasMax && current > this.max) {
-                    this._to(this.max, 200, ease, this.change, function (value) {
+                    this._to(this.max, this.reboundTime, ease, this.change, function (value) {
                         this.reboundEnd.call(this, value)
                         this.animationEnd.call(this, value)
                     }.bind(this))
                 } else if (this.hasMin && current < this.min) {
-                    this._to(this.min, 200, ease, this.change, function (value) {
+                    this._to(this.min, this.reboundTime, ease, this.change, function (value) {
                         this.reboundEnd.call(this, value)
                         this.animationEnd.call(this, value)
                     }.bind(this))
@@ -595,12 +597,12 @@ AlloyTouch = (function () {
                             if (self.hasMax && self.target[self.property] > self.max) {
 
                                 cancelAnimationFrame(self.tickID)
-                                self._to(self.max, 600, ease, self.change, self.animationEnd)
+                                self._to(self.max, self.scrollTime, ease, self.change, self.animationEnd)
 
                             } else if (self.hasMin && self.target[self.property] < self.min) {
 
                                 cancelAnimationFrame(self.tickID)
-                                self._to(self.min, 600, ease, self.change, self.animationEnd)
+                                self._to(self.min, self.scrollTime, ease, self.change, self.animationEnd)
 
                             } else {
                                 if(self.step) {
