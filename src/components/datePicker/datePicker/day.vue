@@ -1,73 +1,55 @@
 <template lang="html">
-  <span :class="['item', state, day === 0 ? 'left' : day === 6 ? 'right' : '']" :data-ind='ind'>
-    <span>{{date}}</span>
-    <span >{{text}}</span>
+  <span :class="['item', state]" :data-ind='data' :data-date='date'>
+    <span>{{day}}</span>
+    <span v-if='text'>{{text}}</span>
+    <span v-if='info'>{{info}}</span>
   </span>
 </template>
 
 <script>
 export default {
   props: {
+    day: [Number, String],
     date: String,
-    ind: Number,
+    data: String,
     text: String,
-    state: String,
-    day: Number
-  },
-  created () {
-    // console.log(this.text)
+    info: String,
+    state: String
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .item{
-  display: inline-block;
-  // display: inline-flex;
-  // flex-direction:column;
-  // justify-content: center;
-  width: 0.52rem;
-  height: 0.51rem;
+  display: inline-flex;
+  flex-direction:column;
+  justify-content: center;
+  width: 0.535rem;
+  height: 0.535rem;
   box-sizing: border-box;
-  line-height: 0.25rem;
-  margin: 0.05rem 0;
-  // background-clip: content-box;
-  text-align: center;
+  border-radius: 50%;
+  padding: 0.05rem;
+  background-clip: content-box;
   vertical-align: middle;
-  border: 0;
   span{
     text-align: center;
-    // flex: 1;
+    font-size: 0.12rem;
+    line-height: 0.12rem;
   }
 }
-.left{
-  // padding-left: 0.05rem;
-  border-radius: 50% 0 0 50%;
-}
-.right{
-  // padding-right: 0.05rem;
-  border-radius: 0 50% 50% 0;
-}
 .start{
-  // padding-left: 0.05rem;
-  border-radius: 50% 0 0 50%;
   background-color: #f55;
 }
 .end{
-  // padding-right: 0.05rem;
-  border-radius: 0 50% 50% 0;
   background-color: #3ee;
 }
 .during{
   background-color: #e88;
 }
 .invalid{
-  // background-color: #dedede;
   color: #999;
 }
 .both{
-  // padding: 0.05rem;
-  border-radius: 50%;
   background-color: #3e8;
 }
 </style>

@@ -1,5 +1,5 @@
 <template lang="html">
-<div class="date-picker" ref='con'>
+<div class="date-picker">
   <div class="head">
     <span>周日</span>
     <span>周一</span>
@@ -9,11 +9,9 @@
     <span>周五</span>
     <span>周六</span>
   </div>
-  <div class="date-con">
-    <div @click='chooseDay'>
-      <month :start='start' :end='end' :index='index' :title='month.title' :ind='month.index' :list='month.list'
-         v-for='(month, index) in list' :key='month.title'></month>
-    </div>
+  <div @click='chooseItem'>
+    <month :during='during' :index='index' :title='month.title' :ind='month.ind' :list='month.days' :computedText='computedText'
+       v-for='(month, index) in list' :key='month.title'></month>
   </div>
 </div>
 </template>
@@ -22,236 +20,302 @@
 import Month from './datePicker/month.vue'
 export default {
   props: {
-    dateConf: { // {length start end}
+    dateConf: {
       type: Object,
-      default () {
+      default () { // length, start end today type
         return {}
       }
     },
-    selectStart: {
+    chooseStart: {
       type: Boolean,
       default: true
     },
-    point: {
-      type: Boolean,
-      default: false
-    },
     startTime: {
-      type: [String, null], // 2017-3-4
+      type: [String, null], // 2017/6/8
       default: null
     },
     endTime: {
       type: [String, null],
       default: null
     },
-    today: {
-      type: Boolean,
-      default: true
-    },
-    dataList: { // {time: xx, text:xx}
-      type: Array,
+    computedText: {
+      type: Function,
       default () {
-        return []
+        return ''
+      }
+    },
+    computedInfo: {
+      type: Function,
+      default (time, start, end) { // time start end
+        return ''
+      }
+    },
+    computedValid: {
+      type: Function,
+      default () {
+        return true
+      }
+    }
+  },
+  computed: {
+    conf () {
+      var conf = this.checkConf()
+      conf.end = conf.end || this.computedTime(conf.start, void 0, conf.length)
+      return conf
+    },
+    list () {
+      return this.getList()
+    },
+    during () {
+      var start, end
+      if (this.curStart === 0) {
+        start = 0
+      } else {
+        start = this.getSide(this.curStart, 1)
+      }
+      if (this.conf.type === 'time') {
+        if (this.curEnd === 0) {
+          end = 0
+        } else {
+          end = this.getSide(this.curEnd, -1)
+        }
+      } else {
+        end = start
+      }
+      return [start, end]
+    }
+  },
+  watch: {
+    list: {
+      immediate: true,
+      handler () {
+        this.$catchStart = this.list[0].days[0].date.split('/').map(item => Number(item))
+      }
+    },
+    chooseStart: {
+      immediate: true,
+      handler () {
+        this.curChooseStart = this.chooseStart
+      }
+    },
+    startTime: {
+      immediate: true,
+      handler (v) {
+        if (v) {
+          this.curStart = this.transDate(v)
+        }
+      }
+    },
+    endTime: {
+      immediate: true,
+      handler (v) {
+        if (v) {
+          this.curEnd = this.transDate(v)
+        }
       }
     }
   },
   data () {
     return {
-      list: [],
-      month: 0,
-      year: 0,
-      start: -1,
-      end: -1,
-      chooseStart: true,
-      step: 0
-    }
-  },
-  computed: {
-    catchList () {
-      var result = {}
-      this.dataList.forEach(item => {
-        var key = typeof item.time === 'string' ? item.time.replace(/-/g, '/') : item.time
-        key = Date.parse(key)
-        result[key] = item.text
-      })
-      return result
-    }
-  },
-  watch: {
-    selectStart (v) {
-      this.chooseStart = v
-      this.step = 0
-    },
-    startTime (v) {
-      this.step = 0
-      if (this.endTime === null) {
-        this.start = this.end = v === null ? -1 : this.trans(v, 'time')
-      } else {
-        if (v === null) {
-          this.start = this.trans(this.endTime, 'time')
-        } else {
-          this.start = this.trans(v, 'time')
-        }
-      }
-    },
-    endTime (v) {
-      this.step = 0
-      if (this.startTime === null) {
-        this.end = this.start = v === null ? -1 : this.trans(v, 'time')
-      } else {
-        if (v === null) {
-          this.end = this.trans(this.startTime, 'time')
-        } else {
-          this.end = this.trans(v, 'time')
-        }
-      }
+      curStart: 0,
+      curEnd: 0,
+      curChooseStart: true,
+      $catchStart: null
+      // $touch: null
     }
   },
   methods: {
-    chooseDay (e) {
-      if (e.target.nodeName === 'SPAN') {
-        var target = e.target
-        target = target.classList.contains('item') ? target : target.parentNode
-        if (!target.classList.contains('invalid')) {
-          if (this.point) {
-            this.start = Number(target.dataset.ind)
-            this.end = this.start
+    chooseItem (e) {
+      var ind = this.getInd(e.target)
+      if (ind !== false) {
+        if (this.curChooseStart) {
+          this.curStart = ind
+          if (this.conf.type === 'time') {
+            this.curChooseStart = false
+            if (this.curEnd !== 0 && ind[0] * 100 + ind[1] > this.curEnd[0] * 100 + this.curEnd[1]) {
+              this.curEnd = 0
+            }
           } else {
-            if (this.chooseStart) {
-              this.start = Number(target.dataset.ind)
-            } else {
-              this.end = Number(target.dataset.ind)
-            }
-            this.chooseStart = !this.chooseStart
-            if (this.start > this.end) {
-              if (this.chooseStart) {
-                this.start = this.end
-              } else {
-                this.end = this.start
-              }
-            } else {
-              if (this.step === 1) {
-                this.$emit('choose', this.trans(this.start, 'ind'), this.trans(this.end, 'ind'))
-              } else {
-                this.step++
-              }
-            }
+            this.curEnd = ind
           }
+        } else {
+          this.curEnd = ind
+          if (this.curStart !== 0 && ind[0] * 100 + ind[1] < this.curStart[0] * 100 + this.curStart[1]) {
+            this.curStart = 0
+          }
+          this.curChooseStart = true
         }
       }
     },
-    init () {
-      this.chooseStart = this.selectStart
-      this.initList()
-      this.step = 0
-      this.start = this.end = -1
-      if (this.startTime || this.endTime) {
-        if (this.startTime) {
-          this.start = this.trans(this.startTime, 'time')
+    // touchStart (e) {
+    //   if (e.touches.length === 1) {
+    //     this.$touch = e.touches[0]
+    //   } else {
+    //     this.$touch = null
+    //   }
+    // },
+    // move (e) {
+    //   if (this.$touch) {
+    //     var needStop = Math.abs(e.touches[0].clientX - this.$touch.clientX) / Math.abs(e.touches[0].clientY - this.$touch.clientY) > 2
+    //     if (needStop) {
+    //       e.preventDefault()
+    //       var ind = this.getInd(e.target)
+    //       if (ind) {
+    //         console.log(ind)
+    //         if (this.curChooseStart) {
+    //           if (this.curStart[0] !== ind[0] || this.curStart[1] !== ind[1]) {
+    //             this.curStart = ind
+    //             if (this.conf.type === 'point') {
+    //               this.curEnd = ind
+    //             }
+    //           }
+    //         } else {
+    //           if (this.curEnd[0] !== ind[0] || this.curEnd[1] !== ind[1]) {
+    //             this.curEnd = ind
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // },
+    // touchEnd () {
+    //   this.$touch = null
+    //   if (this.conf.type === 'time') {
+    //     this.curChooseStart = !this.curChooseStart
+    //   }
+    // },
+    getInd (target) {
+      if (target.nodeName === 'SPAN') {
+        if (!('ind' in target.dataset)) {
+          target = target.parentNode
         }
-        if (this.endTime) {
-          this.end = this.trans(this.endTime, 'time')
+        if ('ind' in target.dataset && !target.classList.contains('invalid')) {
+          return target.dataset.ind.split(',').map(item => Number(item))
         }
-        this.end === -1 && (this.end = this.start)
-        this.start === -1 && (this.start = this.end)
       }
+      return false
     },
-    initList () {
-      var today, config, month, year, startIndex, endIndex, ti, tj
-      today = new Date()
-      config = Object({length: 12, start: today}, this.dateConf)
-      config.start = this.checkDate(config.start)
-      month = config.start.getMonth()
-      year = config.start.getFullYear()
-      this.month = month
-      this.year = year
-      startIndex = config.start.getDate() - 1
-      if (config.end) {
-        config.end = this.checkDate(config.end)
-        endIndex = ((config.end.getFullYear() - year) * 12 + config.end.getMonth() - month) * 100 + config.end.getDate() - 1
-      }
-      // 计算今天下标
-      ti = (today.getFullYear() - year) * 12 + today.getMonth() - month
-      tj = today.getDate() - 1
-      // 计算start end
-      if (this.startTime) {
-        var start = this.checkDate(this.startTime)
-        this.start = ((start.getFullYear() - year) * 12 + start.getMonth() - month) * 100 + start.getDate() - 1
-      }
-      if (this.endTime) {
-        var end = this.checkDate(this.endTime)
-        this.end = ((end.getFullYear() - year) * 12 + end.getMonth() - month) * 100 + end.getDate() - 1
-      }
-      for (let i = 0; i < config.length; i++) { // month
-        let result = {}
-        let ml = new Date(year, month + 1, 0).getDate()
-        result.title = this.getTitle(year, month + 1)
-        result.index = (new Date(year, month, 0).getDay() + 1) % 7
-        result.list = []
-        for (let j = 0; j < ml; j++) { // day
-          let state = 'normal'
-          let ind = i * 100 + j
-          if (ind < startIndex || (endIndex && ind > endIndex)) {
-            state = 'invalid'
+    getList () {
+      var timeArr = this.getTimeArr(this.conf.start)
+      var startArr = timeArr.slice()
+      var endArr = this.getTimeArr(this.conf.end)
+      var list = []
+      var i = -1
+      while (++i < this.conf.length) {
+        var days = new Date(timeArr[0], timeArr[1] + 1, 0).getDate()
+        var index = new Date(timeArr[0], timeArr[1], 1).getDay()
+        var j = 0
+        timeArr[2] = 1
+        list[i] = {
+          ind: index,
+          title: `${timeArr[0]}年${timeArr[1] + 1}月`,
+          days: []
+        }
+        while (++j <= days) {
+          let state, text, info
+          // 计算合法性
+          state = this.computedValid(timeArr.slice())
+          state = state ? 'normal' : 'invalid'
+          if (state === 'normal') {
+            if (this.compareTimeArr(timeArr.slice(), startArr) < 0) {
+              state = 'invalid'
+            } else if (this.compareTimeArr(timeArr.slice(), endArr) > 0) {
+              state = 'invalid'
+            }
           }
-          let day = (this.today && i === ti && j === tj) ? '今天' : String(j + 1)
-          result.list.push({
+          // 计算text
+          text = this.compareTimeArr(timeArr, startArr) === 0 ? this.conf.today : j
+          // 计算info
+          info = this.computedInfo(timeArr, this.conf.start, this.conf.end)
+          list[i].days.push({
             state: state,
-            ind: ind,
-            day: day,
-            text: this.getText(year, month + 1, j + 1)
+            day: text,
+            data: `${i},${j - 1 > 9 ? j - 1 : '0' + (j - 1)}`,
+            date: `${timeArr[0]}/${timeArr[1] + 1}/${j}`,
+            text: '',
+            info: info
           })
+          timeArr[2]++
         }
-        this.$set(this.list, i, result)
-        if (month === 11) {
-          month = 0
-          year++
+        if (timeArr[1] === 11) {
+          timeArr[1] = 0
+          timeArr[0]++
         } else {
-          month++
+          timeArr[1]++
         }
       }
+      return list
     },
-    trans (v, type) {
-      if (type === 'time') {
-        var date = this.checkDate(v)
-        return ((date.getFullYear() - this.year) * 12 + date.getMonth() - this.month) * 100 + date.getDate() - 1
-      } else if (type === 'ind') {
-        var month = parseInt(v / 100) + this.month + 1
-        var day = v % 100 + 1
-        return `${this.year + parseInt(month / 12)}-${month % 12}-${day}`
+    checkConf () {
+      var props = this.dateConf
+      var today = {}
+      var invalid = false
+      if (props.length && !(typeof props.length === 'number' && props.length > 0)) {
+        invalid = true
+      }
+      if (props.type && !(props.type === 'time' || props.type === 'point')) {
+        invalid = true
+      }
+      if (!this.checkTime(props.start, props.end)) {
+        invalid = true
+      }
+      if (props.today && typeof props.today !== 'string') {
+        invalid = true
+      }
+      if (invalid) {
+        props = {}
+        console.warn('please check your dateConf')
+      }
+      return Object.assign({
+        length: 12,
+        start: new Date(),
+        today: '今天',
+        type: 'time' // time point
+      }, props, today)
+    },
+    checkTime (start, end) {
+      if (start && end) {
+        return end - start > 0
+      } else {
+        return true
       }
     },
-    checkDate (time) {
-      if (time.constructor === Date) {
-        return time
-      } else if (typeof time === 'number') {
-        return new Date(time)
-      } else if (typeof time === 'string') {
-        time = time.split('-')
-        if (time.length === 3) {
-          return new Date(time[0], Number(time[1] - 1), time[2])
+    computedTime (time, dayCon = 0, monCon = 0) {
+      return new Date(time.getFullYear(), time.getMonth() + monCon, time.getDate() + dayCon)
+    },
+    getTimeArr (time) {
+      return [time.getFullYear(), time.getMonth(), time.getDate()]
+    },
+    compareTimeArr (arr1, arr2) {
+      return (arr1[0] - arr2[0]) * 1000 + (arr1[1] - arr2[1]) * 50 + (arr1[2] - arr2[2])
+    },
+    getSide (str, type) {
+      var result
+      var arr = str
+      // arr[0] = Number(arr[0])
+      // arr[1]--
+      while (this.list[arr[0]].days[arr[1]].state !== 'normal') {
+        if (this.list[arr[0]].days.length > arr[1] && arr[1] >= 0) {
+          arr[1] = arr[1] + type
         } else {
-          console.error(`${time} in invalid Date`)
+          if (this.list.length > arr[0] && arr[0] >= 0) {
+            arr[0] = arr[0] + type
+          } else {
+            result = 0
+            break
+          }
         }
       }
-    },
-    getTitle (year, month) {
-      return `${year}年${month}月`
-    },
-    getText (year, month, day) {
-      if (this.dataList.length > 0) {
-        var result = this.catchList[Date.parse(`${year}/${month}/${day}`)]
-        return result || ''
+      if (result !== 0) {
+        return arr
+      } else {
+        return result
       }
-      return ''
-    }
-  },
-  created () {
-    this.init()
-  },
-  mounted () {
-    if (this.$refs.con.getBoundingClientRect().bottom > window.innerHeight) {
-      this.$refs.con.style.height = this.$refs.con.offsetHeight - (this.$refs.con.getBoundingClientRect().bottom - window.innerHeight) + 'px'
+    },
+    transDate (date) {
+      var arr = date.split('/')
+      arr = arr.map(item => Number(item))
+      return [(arr[0] - this.$catchStart[0]) * 12 + arr[1] - this.$catchStart[1], arr[2] - 1]
     }
   },
   components: {
@@ -263,30 +327,7 @@ export default {
 <style lang="scss" scoped>
 .head{
   height: 0.2rem;
-  width: 100%;
   display: flex;
   justify-content: space-around;
-  position: absolute;
-  top: 0rem;
-  left: 0;
-  // // position: sticky;
-  // top:0;
-  // left: 0;
-  background: #f55;
-  z-index: 100;
-}
-.date-picker{
-  box-sizing: border-box;
-  padding-top: 0.2rem;
-  position: relative;
-  overflow: hidden;
-}
-.date-con {
-  height: 100%;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  &::-webkit-scrollbar {
-    display: none;
-  }
 }
 </style>

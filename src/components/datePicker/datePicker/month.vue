@@ -1,9 +1,8 @@
 <template lang="html">
   <div class="month">
     <div class="head">{{title}}</div>
-    <day v-for='(day, index) in monthList' :style="index === 0 ? {'marginLeft': 0.52*ind + 'rem'} : ''"
-        :state='day.state' :ind='day.ind' :text='day.text' :date='day.day' :day='(ind + index) % 7' :key='day.day'></day>
-    <div class="foot"></div>
+    <day v-for='(day, index) in monthList' :style="index === 0 ? {'marginLeft': 0.535*ind + 'rem'} : ''"
+        :state='day.state' :info='day.info' :text='day.text' :data='day.data' :date='day.date' :day='day.day' :key='day.day'></day>
   </div>
 </template>
 
@@ -14,149 +13,130 @@ export default {
     title: String,
     ind: Number,
     index: Number,
-    start: Number,
-    end: Number,
+    during: Array,
     list: {
       type: Array,
       default () {
         return []
       }
-    }
+    },
+    computedText: Function
   },
   data () {
     return {
-      monthList: [],
-      lock: false, // 在list，start end同时更新时仅执行list的更新，lock当时上锁，更新在定时器中执行
-      preRang: [-2, -2],
-      curRang: [-2, -2] // [-2, -2] [-2, x] [x, -2] [-1, x] [-1, 100] [x, 100] [x, x]
+      monthList: []
     }
   },
   watch: {
-    list (v, ov) {
-      if (JSON.stringify(v) !== JSON.stringify(ov)) {
-        this.lock = true
-        this.init()
-        setTimeout(() => {
-          this.lock = false
-        }, 10)
+    list: {
+      immediate: true,
+      handler (v, ov) {
+        this.monthList = JSON.parse(JSON.stringify(v))
       }
     },
-    start (v, ov) { // 如果未上锁在定时器内生成新curRange执行check
-      // console.log(this.start, this.end, 0)
-      this.watchPoint()
-    },
-    end (v, ov) { // 两两定时器互相取消执行
-      this.watchPoint()
+    during: {
+      immediate: true,
+      handler (v, ov) {
+        if (JSON.stringify(v) !== JSON.stringify(ov)) {
+          var curRange, preRange, range
+          if (v) {
+            curRange = this.getRange(v)
+          }
+          if (ov) {
+            preRange = this.getRange(ov)
+          }
+          if ((curRange || preRange) && JSON.stringify(curRange) !== JSON.stringify(preRange)) {
+            if (!curRange) {
+              range = preRange.map(item => item.value)
+            } else if (!preRange) {
+              range = curRange.map(item => item.value)
+            } else {
+              // 这里可以优化
+              range = [Math.min(curRange[0].value, preRange[0].value), Math.max(curRange[1].value, preRange[1].value)]
+            }
+            for (var i = range[0]; i <= range[1]; i++) {
+              if (this.list[i].state !== 'invalid') {
+                var state, text
+                if (curRange) {
+                  if (i < curRange[0].value || i > curRange[1].value) {
+                    state = 'normal'
+                  } else if (i > curRange[0].value && i < curRange[1].value) {
+                    state = 'during'
+                  } else if (i === curRange[0].value) {
+                    state = curRange[0].type
+                  } else {
+                    state = curRange[1].type
+                  }
+                } else {
+                  state = 'normal'
+                }
+                text = this.computedText(state, this.monthList[i].date)
+                this.$set(this.monthList, i, Object.assign(this.monthList[i], {state: state, text: text}))
+              }
+            }
+          }
+        }
+      }
     }
   },
   methods: {
-    change (s, e) {
-      if (s === e) {
-        if (this.monthList[s].state !== 'invalid') {
-          var state = this.computedState(this.monthList[s].ind)
-          if (this.monthList[s].state !== state) {
-            this.$set(this.monthList, s, Object.assign(this.monthList[s], {state: state}))
+    getRange (v) {
+      if (v) {
+        var start = v[0] === 0 ? 0 : v[0]
+        var end = v[1] === 0 ? 0 : v[1]
+        var sPoint, ePoint
+        if (start !== 0 && start[0] === this.index) {
+          sPoint = {
+            type: 'start',
+            value: start[1]
           }
         }
-      } else {
-        this.monthList.forEach((item, index) => {
-          if (item.state !== 'invalid' && index >= s && index <= e) {
-            var state = this.computedState(item.ind)
-            if (item.state !== state) {
-              this.$set(this.monthList, index, Object.assign(item, {state: state}))
+        if (end !== 0 && end[0] === this.index) {
+          ePoint = {
+            type: 'end',
+            value: end[1]
+          }
+        }
+        if (start !== 0 && end !== 0) {
+          if ((sPoint || this.index > start[0]) && this.index < end[0]) {
+            ePoint = {
+              type: 'during',
+              value: this.list.length - 1
             }
           }
-        })
-      }
-      this.preRang = this.curRang.slice(0)
-    },
-    checkChange () { // 对比当前范围与新范围变化
-      if (JSON.stringify(this.curRang) !== JSON.stringify(this.preRang)) {
-        console.log('need change')
-        var arr, carr, s, e
-        arr = this.curRang.concat(this.preRang)
-        carr = arr.filter(item => item !== -2)
-        if (carr.length === 1) { // none point
-          s = e = arr.find(item => item === carr[0])
-        } else {
-          carr.sort((a, b) => a - b)
-          s = carr[0]
-          e = carr[carr.length - 1]
-        }
-        this.change(s, e)
-      }
-    },
-    watchPoint () {
-      if (!this.lock) {
-        this.lock = true
-        this.computedRang()
-        this.checkChange()
-        setTimeout(() => {
-          this.lock = false
-        }, 10)
-      }
-    },
-    computedRang () {
-      var si = this.start === -1 ? -1 : parseInt(this.start / 100)
-      var ei = this.end === -1 ? -1 : parseInt(this.end / 100)
-      var s, e
-      if (si !== -1 && ei !== -1) { // choose range
-        if (this.index >= si && this.index <= ei) { // in range
-          s = this.index > si ? -1 : this.start % 100
-          e = this.index < ei ? 100 : this.end % 100
-        } else { // out range
-          s = -2
-          e = -2
-        }
-      } else { // choose point
-        if (si === this.index) {
-          s = this.start % 100
-          e = -2
-        } else if (ei === this.index) {
-          s = -2
-          e = this.end % 100
-        } else {
-          s = -2
-          e = -2
-        }
-      }
-      this.curRang = [s, e]
-    },
-    computedState (ind) {
-      if (this.start !== -1 && this.end !== -1) {
-        if (ind > this.start && ind < this.end) {
-          return 'during'
-        } else if (ind === this.start && ind === this.end) {
-          return 'both'
-        }
-      }
-      if (ind === this.start) {
-        return 'start'
-      }
-      if (ind === this.end) {
-        return 'end'
-      }
-      return 'normal'
-    },
-    init () {
-      this.computedRang()
-      this.list.forEach((item, index) => {
-        if (item.state === 'invalid') {
-          this.$set(this.monthList, index, item)
-        } else {
-          var state = this.computedState(item.ind)
-          if (state !== item.state) {
-            this.$set(this.monthList, index, Object.assign(item, {state: state}))
-          } else {
-            this.$set(this.monthList, index, item)
+          if (ePoint && this.index > start[0]) {
+            sPoint = {
+              type: 'during',
+              value: 0
+            }
           }
         }
-      })
-      this.preRang = this.curRang.slice(0)
+        if (sPoint || ePoint) {
+          if (sPoint && ePoint) {
+            if (sPoint.value === ePoint.value) {
+              sPoint = ePoint = {
+                type: 'both',
+                value: sPoint.value
+              }
+            }
+          }
+          if (!sPoint) {
+            sPoint = ePoint
+          }
+          if (!ePoint) {
+            ePoint = sPoint
+          }
+          return [sPoint, ePoint]
+        } else {
+          return false
+        }
+      } else {
+        return false
+      }
     }
   },
   created () {
-    this.init()
+
   },
   components: {
     Day
@@ -165,21 +145,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.month{
-  padding: 0 0.05rem;
-  position: relative;
-}
 .head{
-  height: 0.25rem;
-  background: #fff;
-  border-bottom: 1px solid #dcdcdc;
-  text-align: center;
-  line-height: 0.23rem;
+  height: 0.2rem;
+  background: #f55;
   position: sticky;
   top: 0;
-  z-index: 10;
-}
-.foot{
-  border-bottom: 1px solid #dcdcdc;
 }
 </style>
