@@ -6,6 +6,7 @@ import IndexList from '@/examples/indexList/index'
 import AutoLoading from '@/examples/autoLoading/index'
 import AutoLoading2 from '@/examples/autoLoading/index2'
 import DatePicker from '@/examples/datePicker/index'
+import Swiper from '@/examples/swiper/index'
 // import Dictionary from '@/components/pages/dictionary'
 // import Swiper from '@/components/pages/swiper'
 // import LazyLoad from '@/components/pages/lazyLoad'
@@ -41,6 +42,11 @@ var routes = [
     path: '/date_picker',
     name: 'datePicker',
     component: DatePicker
+  },
+  {
+    path: '/swiper',
+    name: 'swiper',
+    component: Swiper
   },
   // {
   //   path: '/datePicker',
