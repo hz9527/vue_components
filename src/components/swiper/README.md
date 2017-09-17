@@ -59,9 +59,17 @@ template:
 <swiper :autoTime='autoTime' :waitTime='waitTime' :defaultIndex='defaultIndex'
 :speed='speed' :showIndex='showIndex' :needUpdate='needUpdate'
 @change='change' @updated='updated'>
+  <div class='head-con' slot='head'>
+    <span :class="[defaultIndex === i ? 'active' : '']" v-for='(item, i) in list' :key='item.id'>{{item.text}}</span>
+  </div>
+  <div slot='other'>
+    <b class='up'></b>
+    <b class='down'></b>
+  </div>
   <swiper-item v-for='item in list' :key='item.id' slot='item'>
     <div :style="{backgroundImage: item.src}"></div>
   </swiper-item>
+  <div slot='foot'></div>
 </swiper>
 ```
 
@@ -74,7 +82,13 @@ data () {
     defaultIndex: 2, // 默认展示第三张轮播图
     speed: 0.8, // touchEnd后会最小滑动速度为0.8px／ms
     showIndex: false, // 不展示轮播图对应的小圆点
-    needUpdate: false // 是否需要更新swiper
+    needUpdate: false, // 是否需要更新swiper
+    list: [
+      {id: 1, text: 'car1', src: '//xx.com/static/image/1.jpg'},
+      {id: 2, text: 'car2', src: '//xx.com/static/image/2.jpg'},
+      {id: 3, text: 'car3', src: '//xx.com/static/image/3.jpg'},
+      {id: 4, text: 'car4', src: '//xx.com/static/image/4.jpg'}
+    ]
   }
 }
 ```
