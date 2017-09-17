@@ -24,7 +24,7 @@ export default {
     },
     waitTime: { // 自动滑动等待时间
       type: Number,
-      default: 500
+      default: 2000
     },
     defaultIndex: {
       type: Number,
