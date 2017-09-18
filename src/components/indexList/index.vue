@@ -4,16 +4,16 @@
       <slot name='head'></slot>
     </div>
     <div class="content" ref='con'>
-      <div :ref='item' class="index-list" v-for='item in curData.index' :key='item'>
-        <div class="item-head">{{item}}</div>
-        <div class="item" v-for='info in curData.list[item]' :key='info.key'>{{info.name}}</div>
+      <div :ref='item' class="index-list" v-for='item in curData.index' :key='item' @click='chooseItem($event, item)'>
+        <div :class="['item-head', headClass]">{{item}}</div>
+        <div :data-index='i' :class="['item', itemClass]" v-for='(info, i) in curData.list[item]' :key='info.key'>{{info.name}}</div>
       </div>
     </div>
     <div class="foot">
       <slot name='foot'></slot>
     </div>
     <div class="index-con" @touchstart='moveStart' @touchmove='move' @touchend='moveEnd' @touchcancel='moveEnd' @click='clickIndex'>
-      <span :data-index='i' v-for='(item, i) in curData.index' :style="{'height': itemHeight + 'px', 'lineHeight': itemHeight + 'px'}" :key='item'>{{item}}</span>
+      <span :class='indexClass' :data-index='i' v-for='(item, i) in curData.index' :style="{'height': itemHeight + 'px', 'lineHeight': itemHeight + 'px'}" :key='item'>{{item}}</span>
     </div>
     <div class="index-toast" v-show='indToastShow'>{{chooseIndex}}</div>
   </div>
@@ -38,12 +38,25 @@ export default {
     maxHeight: {
       type: Number,
       default: 20
+    },
+    headClass: {
+      type: String,
+      default: ''
+    },
+    itemClass: {
+      type: String,
+      default: ''
+    },
+    indexClass: {
+      type: String,
+      default: ''
     }
   },
   data () {
     return {
       height: '100%',
       chooseIndex: '',
+      _curKey: null,
       indToastShow: false,
       itemHeight: 0,
       _startY: null,
@@ -52,13 +65,13 @@ export default {
   },
   computed: {
     curData () { // {list: {}, index: []}
-      var curKeyConf = Object.assign({
+      this._curKey = Object.assign({
         id: 'id',
         name: 'name',
         pinyin: 'pinyin',
         division: ''
       }, this.keyConf)
-      return getCurData(curKeyConf, this.list)
+      return getCurData(this._curKey, this.list)
     }
   },
   watch: {
@@ -75,6 +88,17 @@ export default {
     }
   },
   methods: {
+    chooseItem (e, key) {
+      if ('index' in e.target.dataset) {
+        var index = e.target.dataset.index
+        var item = this.curData.list[key][index]
+        var result = {
+          [this._curKey.id]: item.id,
+          [this._curKey.name]: item.name
+        }
+        this.$emit('chooseItem', result)
+      }
+    },
     clickIndex (e) {
       if ('index' in e.target.dataset) {
         this.choose(Number(e.target.dataset.index))

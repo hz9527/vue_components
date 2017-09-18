@@ -48,7 +48,7 @@ function compare (pre, next, Division, ind) {
       if (typeof Division === 'string' && (pre[ind] === Division || next[ind] === Division)) {
         return pre[ind] === Division ? -1 : 1
       } else if (typeof Division === 'function') {
-        return Division(pre[ind], next[ind])
+        return Division(pre, next)
       }
     }
     return c
