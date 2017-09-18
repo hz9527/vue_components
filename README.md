@@ -23,9 +23,12 @@ npm run dev
 7. 其他
 
 ## 组件文档目录
-**[1.picker组件使用说明](./src/components/picker/picker/README.md)**  
+**[1.picker组件使用说明](./src/components/picker/README.md)**  
 **[2.indexList组件使用说明](./src/components/indexList/README.md)**  
 **[3.autoLoading(原生)组件使用说明](./src/components/autoLoading/README.md)**  
 **[4.autoLoading(base AlloyTouch)组件使用说明](./src/components/autoLoading2/README.md)**  
 **[5.datePicker组件使用说明](./src/components/datePicker/README.md)**  
 **[6.swiper组件使用说明](./src/components/swiper/README.md)**  
+
+## ToDo
+1. swiper加上up，down接口

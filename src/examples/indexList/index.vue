@@ -3,7 +3,7 @@
     <div class="hz-head">
       <router-link to="/">&lt;  index</router-link>
     </div>
-    <index-list :list='cityList' />
+    <index-list :list='cityList' :keyConf='keyConf' />
   </div>
 </template>
 
@@ -13,7 +13,8 @@ import IndexList from '../../components/indexList/index'
 export default {
   data () {
     return {
-      cityList: cityList
+      cityList: cityList,
+      keyConf: {id: 'cityId'}
     }
   },
   components: {
