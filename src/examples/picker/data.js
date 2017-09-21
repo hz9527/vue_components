@@ -215,5 +215,129 @@ var childList = [
     ]
   }
 ]
-
-export {normalList, numList, childList}
+var multiChildList = [
+  {
+    flex: 2,
+    name: 'sheng',
+    parentName: null,
+    data: [
+      {
+        parent: null,
+        list: ['北京', '湖北', '陕西']
+      }
+    ]
+  },
+  {
+    flex: 1,
+    content: '-'
+  },
+  {
+    flex: 2,
+    name: 'shi',
+    parentName: 'sheng',
+    data: [
+      {
+        parent: '北京',
+        list: ['朝阳', '海淀', '东城', '西城']
+      },
+      {
+        parent: '湖北',
+        list: ['武汉', '鄂州', '黄石', '宜昌', '襄阳']
+      },
+      {
+        parent: '陕西',
+        list: ['西安', '宝鸡', '安康']
+      }
+    ]
+  },
+  {
+    flex: 1,
+    content: '至'
+  },
+  {
+    flex: 2,
+    name: 'sheng2',
+    parentName: null,
+    data: [
+      {
+        parent: null,
+        list: ['北京', '湖北', '陕西']
+      }
+    ]
+  },
+  {
+    flex: 1,
+    content: '-'
+  },
+  {
+    flex: 2,
+    name: 'shi2',
+    parentName: 'sheng2',
+    data: [
+      {
+        parent: '北京',
+        list: ['朝阳', '海淀', '东城', '西城']
+      },
+      {
+        parent: '湖北',
+        list: ['武汉', '鄂州', '黄石', '宜昌', '襄阳']
+      },
+      {
+        parent: '陕西',
+        list: ['西安', '宝鸡', '安康']
+      }
+    ]
+  }
+]
+var hybridList = [
+  {
+    flex: 2,
+    name: 'sheng',
+    parentName: null,
+    data: [
+      {
+        parent: null,
+        list: ['北京', '湖北', '陕西']
+      }
+    ]
+  },
+  {
+    flex: 1,
+    content: '-'
+  },
+  {
+    flex: 2,
+    parentName: 'sheng',
+    data: [
+      {
+        parent: '北京',
+        list: ['朝阳', '海淀', '东城', '西城']
+      },
+      {
+        parent: '湖北',
+        list: ['武汉', '鄂州', '黄石', '宜昌', '襄阳']
+      },
+      {
+        parent: '陕西',
+        list: ['西安', '宝鸡', '安康']
+      }
+    ]
+  },
+  {
+    flex: 2,
+    content: '时间：'
+  },
+  {
+    flex: 2,
+    list: [2011, 2012, 2013, 2014, 2015, 2016, 2017]
+  },
+  {
+    flex: 1,
+    content: '/'
+  },
+  {
+    flex: 2,
+    list: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  }
+]
+export {normalList, numList, childList, multiChildList, hybridList}
