@@ -64,7 +64,7 @@ template:
 <auto-loading :loadType='"all"' :loading='loading' :canLoad='canLoad'
   :pullLoadHeight='pullLoadHeight' :preLoadHeight='preLoadHeight'
   @refresh='refresh' @preload='load' @needMore='load'>
-  <div slot='head' class='head'>使用AlloyTouch库实现的autoLoading</div>
+  <div slot='head' class='head'>原生滚动实现的autoLoading</div>
   <div slot='list' class="item" v-for='item in list' :key='item.id'>
     {{item.text}}
   </div>

@@ -1,7 +1,7 @@
 <template lang="html">
   <div class="picker">
     <slot name='head'>
-      <div class="head">
+      <div class="head" v-show='showHead'>
         <div class="head-btn" @click='cancel'>取消</div>
         <div class="head-btn" @click='confirm'>确认</div>
       </div>
@@ -14,7 +14,7 @@
          <div class="center" :style="{'height': itemHeight + 'px'}"></div>
        </slot>
        <slot name='bg'>
-         <div class="bg"></div>
+         <div class="bg" v-show='showBg'></div>
        </slot>
     </div>
   </div>
@@ -50,6 +50,14 @@ export default {
     itemHeight: {
       type: Number,
       default: 30 // unit px
+    },
+    showHead: {
+      type: Boolean,
+      default: false
+    },
+    showBg: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
