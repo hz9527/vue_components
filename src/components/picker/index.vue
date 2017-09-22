@@ -179,6 +179,17 @@ export default {
     },
     moveEnd (v, i) {
       this.$set(this.chooseList, i, v)
+      var result = this._forMatList.map((item, i) => {
+        if (item.type !== 'division') {
+          return {
+            name: item.list[this.chooseList[i]].name,
+            value: item.list[this.chooseList[i]].value,
+            index: this.chooseList[i]
+          }
+        }
+        return null
+      }).filter(item => item !== null)
+      this.$emit('choose', result)
     },
     updateChoose () {
       if (this.choose.length !== this.chooseList.length) {
