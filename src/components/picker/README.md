@@ -29,6 +29,8 @@
 |list|传入列表数据|Array|是|[]| [详情](#关于list) |
 |choose|选择项列表|Array|否|[]| [详情](#关于choose) |
 |limitMethods|校验数据|[Function, Boolean]|否|false|备注|
+|eventConf|配置事件名，若不存在也将不触发该事件|Object|否|{cancel: 'cancel', confirm: 'confirm', choose: 'choose'}|在confirm与choose事件触发时需要一定计算，如果不监听建议不配置该事件|
+|resultSameAsList|返回结果要求|Boolean|否|true|true则结果与list长度一致，间隔列为－1，false只返回值列|
 |showLine|展示的列数|Number|否|5|必须为奇数|
 |itemHeight|每列高度|Number|否|30|单位px|
 |showHead|是否展示取消 确认按钮|Boolean|否|false|取消会恢复默认值或choose值，确认会触发confirm事件|
@@ -151,12 +153,15 @@ choose为选中项，且初次不作校验，每一项代表下标，保持与li
 ### 关于事件
 |事件名|触发时机|参数列表|
 |---|---|---|
-|choose|某列列表滑动结束触发|值列数组{name, value, index}|
-
+|choose|某列列表滑动结束触发|值列数组{name, value, index[, dataIndex]}|
+|confirm|点击确认按钮|值列数组{name, value, index[, dataIndex]}|
+|cancel|点击取消按钮|无|
 
 ### 关于插槽
-|接口名|作用|数据类型|
+|插槽名|作用|备注|
 |---|---|---|
+|head|顶部插槽|可以配合showHead使用|
+|bg|背景插槽|可以配合showBg|
 
 ### 完整示例
 > 参考示例

@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import {formateList, getTree, initList, getChildTree, getListItem, resetList} from './src/utils'
+import {formateList, getTree, initList, getChildTree, getListItem, resetList, getResult} from './src/utils'
 // initList arg[formateList, chooseList, tree] return {computedList, curChoose}
 // getChildTree arg[formateList, name, chooseList.slice(), tree] return {curChoose, changeList}
 import Item from './src/item'
@@ -42,6 +42,20 @@ export default {
     limitMethods: {
       type: [Function, Boolean],
       default: false
+    },
+    eventConf: {
+      type: Object,
+      default () {
+        return {
+          confirm: 'confirm',
+          cancel: 'cancel',
+          choose: 'choose'
+        }
+      }
+    },
+    resultSameAsList: {
+      type: Boolean,
+      default: true
     },
     showLine: {
       type: Number,
@@ -110,24 +124,14 @@ export default {
       } else {
         this.updateChoose()
       }
-      this.$emit('cancel')
+      if (this.eventConf.cancel) {
+        this.$emit(this.eventConf.cancel)
+      }
     },
     confirm () {
-      var result = this._forMatList.map((item, i) => {
-        var result = -1
-        if (item.type !== 'division') {
-          result = {
-            index: this.chooseList[i],
-            value: item.list[this.chooseList[i]].value,
-            name: item.list[this.chooseList[i]].name
-          }
-          if (item.type === 'tree') {
-            result.dataIndex = item.dataIndex
-          }
-        }
-        return result
-      })
-      this.$emit('confirm', result)
+      if (this.eventConf.confirm) {
+        this.$emit(this.eventConf.confirm, getResult(this._forMatList, this.chooseList, this.resultSameAsList))
+      }
     },
     initData (list) {
       this._forMatList = formateList(list)
@@ -179,17 +183,9 @@ export default {
     },
     moveEnd (v, i) {
       this.$set(this.chooseList, i, v)
-      var result = this._forMatList.map((item, i) => {
-        if (item.type !== 'division') {
-          return {
-            name: item.list[this.chooseList[i]].name,
-            value: item.list[this.chooseList[i]].value,
-            index: this.chooseList[i]
-          }
-        }
-        return null
-      }).filter(item => item !== null)
-      this.$emit('choose', result)
+      if (this.eventConf.choose) {
+        this.$emit(this.eventConf.choose, getResult(this._forMatList, this.chooseList, this.resultSameAsList))
+      }
     },
     updateChoose () {
       if (this.choose.length !== this.chooseList.length) {

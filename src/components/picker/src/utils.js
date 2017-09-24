@@ -204,4 +204,27 @@ function resetList (list, tree) {
   })
   return changeList
 }
-export {formateList, getTree, initList, getChildTree, getListItem, resetList}
+function getResult (treeList, chooseList, sameAsList) {
+  return treeList.map((item, i) => {
+    var result = -1
+    if (item.type !== 'division') {
+      result = {
+        index: chooseList[i],
+        value: item.list[chooseList[i]].value,
+        name: item.list[chooseList[i]].name
+      }
+      if (item.type === 'tree') {
+        result.dataIndex = item.dataIndex
+      }
+    }
+    return result
+  }).filter(item => {
+    if (sameAsList) {
+      return true
+    } else {
+      return item !== -1
+    }
+  })
+}
+
+export {formateList, getTree, initList, getChildTree, getListItem, resetList, getResult}
