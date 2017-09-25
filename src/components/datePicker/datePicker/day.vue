@@ -1,5 +1,5 @@
 <template lang="html">
-  <span :class="['item', state]" :data-ind='data' :data-date='date'>
+  <span :class="['item', state, classConf[state]]" :data-ind='data' :data-date='date'>
     <span>{{day}}</span>
     <span v-if='text'>{{text}}</span>
     <span v-if='info'>{{info}}</span>
@@ -14,7 +14,8 @@ export default {
     data: String,
     text: String,
     info: String,
-    state: String
+    state: String,
+    classConf: Object
   }
 }
 </script>
