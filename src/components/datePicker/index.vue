@@ -1,6 +1,6 @@
 <template lang="html">
-<div class="date-picker">
-  <div class="head">
+<div class="date-picker" ref='page' :style="{'height': height}">
+  <div :class="['head', curClassConf.head]">
     <span>周日</span>
     <span>周一</span>
     <span>周二</span>
@@ -9,9 +9,9 @@
     <span>周五</span>
     <span>周六</span>
   </div>
-  <div @click='chooseItem'>
+  <div class='content' @click='chooseItem'>
     <month :during='during' :index='index' :title='month.title' :ind='month.ind' :list='month.days' :computedText='computedText'
-       v-for='(month, index) in list' :key='month.title'></month>
+       v-for='(month, index) in list' :key='month.title' :classConf='curClassConf'></month>
   </div>
 </div>
 </template>
@@ -55,6 +55,12 @@ export default {
       default () {
         return true
       }
+    },
+    classConf: {
+      type: Object,
+      default () {
+        return {}
+      }
     }
   },
   computed: {
@@ -83,6 +89,17 @@ export default {
         end = start
       }
       return [start, end]
+    },
+    curClassConf () {
+      return Object.assign({}, {
+        start: '',
+        end: '',
+        both: '',
+        invalid: '',
+        during: '',
+        head: '',
+        monthHead: ''
+      }, this.classConf)
     }
   },
   watch: {
@@ -120,8 +137,8 @@ export default {
       curStart: 0,
       curEnd: 0,
       curChooseStart: true,
-      $catchStart: null
-      // $touch: null
+      $catchStart: null,
+      height: '100%'
     }
   },
   methods: {
@@ -147,43 +164,6 @@ export default {
         }
       }
     },
-    // touchStart (e) {
-    //   if (e.touches.length === 1) {
-    //     this.$touch = e.touches[0]
-    //   } else {
-    //     this.$touch = null
-    //   }
-    // },
-    // move (e) {
-    //   if (this.$touch) {
-    //     var needStop = Math.abs(e.touches[0].clientX - this.$touch.clientX) / Math.abs(e.touches[0].clientY - this.$touch.clientY) > 2
-    //     if (needStop) {
-    //       e.preventDefault()
-    //       var ind = this.getInd(e.target)
-    //       if (ind) {
-    //         console.log(ind)
-    //         if (this.curChooseStart) {
-    //           if (this.curStart[0] !== ind[0] || this.curStart[1] !== ind[1]) {
-    //             this.curStart = ind
-    //             if (this.conf.type === 'point') {
-    //               this.curEnd = ind
-    //             }
-    //           }
-    //         } else {
-    //           if (this.curEnd[0] !== ind[0] || this.curEnd[1] !== ind[1]) {
-    //             this.curEnd = ind
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // },
-    // touchEnd () {
-    //   this.$touch = null
-    //   if (this.conf.type === 'time') {
-    //     this.curChooseStart = !this.curChooseStart
-    //   }
-    // },
     getInd (target) {
       if (target.nodeName === 'SPAN') {
         if (!('ind' in target.dataset)) {
@@ -316,7 +296,14 @@ export default {
       var arr = date.split('/')
       arr = arr.map(item => Number(item))
       return [(arr[0] - this.$catchStart[0]) * 12 + arr[1] - this.$catchStart[1], arr[2] - 1]
+    },
+    init () {
+      var rect = this.$refs.page.getBoundingClientRect()
+      this.height = window.innerHeight - rect.top + 'px'
     }
+  },
+  mounted () {
+    this.init()
   },
   components: {
     Month
@@ -325,6 +312,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.date-picker {
+  display: flex;
+  flex-direction: column;
+  .head {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+  .content {
+    flex: 1;
+    overflow: auto;
+  }
+}
 .head{
   height: 0.2rem;
   display: flex;

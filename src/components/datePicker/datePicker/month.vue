@@ -1,8 +1,8 @@
 <template lang="html">
   <div class="month">
-    <div class="head">{{title}}</div>
+    <div :class="['head', classConf.monthHead]">{{title}}</div>
     <day v-for='(day, index) in monthList' :style="index === 0 ? {'marginLeft': 0.535*ind + 'rem'} : ''"
-        :state='day.state' :info='day.info' :text='day.text' :data='day.data' :date='day.date' :day='day.day' :key='day.day'></day>
+        :state='day.state' :classConf='classConf' :info='day.info' :text='day.text' :data='day.data' :date='day.date' :day='day.day' :key='day.day'></day>
   </div>
 </template>
 
@@ -20,6 +20,7 @@ export default {
         return []
       }
     },
+    classConf: Object,
     computedText: Function
   },
   data () {
